@@ -770,4 +770,251 @@ body {
   border-color: var(--accent);
 }
 
+/* Journal Nav Button */
+.journal-nav-btn {
+  background: #151f17;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+.journal-nav-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-selected);
+}
+
+/* Journal Stats Banner */
+.journal-stats-banner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.journal-stat-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  text-align: center;
+}
+.journal-stat-item .stat-number {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.journal-stat-item .stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Journal Filter Tabs */
+.journal-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.filter-btn {
+  background: #121913;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 16px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: #0b110c;
+  border-color: var(--accent);
+}
+
+/* Journal Cards Grid */
+.journal-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 480px) {
+  .journal-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.journal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+.journal-card:hover {
+  border-color: var(--border-focus);
+}
+.journal-card-media {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  background: #090e0a;
+}
+.journal-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.journal-card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.journal-card-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 4px 0 2px;
+  color: var(--text-main);
+}
+.journal-card-tamil {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.journal-card-sci {
+  font-size: 0.74rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.journal-card-fact {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: auto;
+}
+
+/* Locked Species Card */
+.journal-card.locked {
+  background: #0f1510;
+  border: 1px dashed #263328;
+  opacity: 0.85;
+}
+.journal-card.locked .journal-card-media {
+  background: #0a0f0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.locked-silhouette-icon {
+  font-size: 2.8rem;
+  filter: grayscale(1) opacity(0.35);
+}
+.locked-hint-box {
+  background: rgba(22, 101, 52, 0.15);
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  color: #86efac;
+  line-height: 1.3;
+}
+
+/* Card Unlock Celebration Modal */
+.unlock-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+.unlock-modal-content {
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 32px rgba(132, 204, 22, 0.35);
+  animation: scaleUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.unlock-badge-header {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.unlock-card-frame {
+  background: #0b110c;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.unlock-card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+.unlock-card-body {
+  padding: 14px;
+  text-align: left;
+}
+.unlock-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 6px 0 2px;
+  color: var(--text-main);
+}
+.unlock-tamil {
+  font-size: 0.95rem;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.unlock-sci {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.unlock-fact {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+  margin-top: 8px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleUp {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 

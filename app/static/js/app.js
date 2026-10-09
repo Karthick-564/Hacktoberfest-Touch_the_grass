@@ -12,6 +12,7 @@ const homeView = document.getElementById("home-view");
 const questionView = document.getElementById("question-view");
 const summaryView = document.getElementById("summary-view");
 const resultsView = document.getElementById("results-view");
+const journalView = document.getElementById("journal-view");
 const langToggleBtn = document.getElementById("lang-toggle-btn");
 const micBtn = document.getElementById("mic-btn");
 const micStatus = document.getElementById("mic-status");
@@ -230,6 +231,33 @@ function setupEventListeners() {
   document.getElementById("submit-matches-btn").addEventListener("click", submitObservation);
   document.getElementById("new-observation-btn").addEventListener("click", resetToHome);
   document.getElementById("home-link").addEventListener("click", resetToHome);
+
+  // Journal and Modal Event Listeners
+  const journalNavBtn = document.getElementById("journal-nav-btn");
+  if (journalNavBtn) journalNavBtn.addEventListener("click", () => openJournal("all"));
+
+  const backFromJournalBtn = document.getElementById("back-from-journal-btn");
+  if (backFromJournalBtn) backFromJournalBtn.addEventListener("click", resetToHome);
+
+  const modalCloseBtn = document.getElementById("modal-close-btn");
+  if (modalCloseBtn) modalCloseBtn.addEventListener("click", () => {
+    document.getElementById("unlock-modal").style.display = "none";
+  });
+
+  const modalViewJournalBtn = document.getElementById("modal-view-journal-btn");
+  if (modalViewJournalBtn) modalViewJournalBtn.addEventListener("click", () => {
+    document.getElementById("unlock-modal").style.display = "none";
+    openJournal("all");
+  });
+
+  document.querySelectorAll(".journal-filters .filter-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll(".journal-filters .filter-btn").forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      const filter = e.target.getAttribute("data-filter");
+      renderDeckCards(filter);
+    });
+  });
 }
 
 // Submit Spoken Observation directly to /api/match
@@ -274,6 +302,11 @@ async function loadStats() {
       ? `${data.unlocked_species} of ${data.total_species} ${data.region_name} ${currentCategory}`
       : `${data.total_species} இல் ${data.unlocked_species} ${currentCategory === 'birds' ? 'பறவைகள்' : 'மரங்கள்'} கண்டறியப்பட்டது`;
     document.getElementById("stats-display").textContent = statText;
+
+    const journalCountEl = document.getElementById("journal-btn-count");
+    if (journalCountEl) {
+      journalCountEl.textContent = `${data.unlocked_species}/${data.total_species}`;
+    }
   } catch (e) {
     document.getElementById("stats-display").textContent = "Field pack loaded";
   }
@@ -576,6 +609,12 @@ function renderResultsScreen(data) {
     container.appendChild(audioBanner);
   }
 
+  // AI Engine Evaluation Badge
+  const engineBanner = document.createElement("div");
+  engineBanner.style.cssText = "font-size: 0.8rem; color: var(--accent); margin-bottom: 12px; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 6px;";
+  engineBanner.innerHTML = `<span>⚡ ENGINE:</span> <span style="color: var(--text-main); font-weight: 600;">${data.engine_used || 'Gemma 2 (Local)'}</span> · <span style="color: #60a5fa;">🎙️ ElevenLabs Turbo</span>`;
+  container.appendChild(engineBanner);
+
   candidates.forEach((cand) => {
     const card = document.createElement("div");
     card.className = "candidate-card";
@@ -599,12 +638,156 @@ function renderResultsScreen(data) {
       <div class="confirm-box">
         <div class="confirm-label">${currentLang === "en" ? "LOOK TO CONFIRM" : "உறுதிப்படுத்தப் பாருங்கள்"}</div>
         <div class="confirm-question">${cand.confirm_question}</div>
-        <button class="unlock-btn" onclick="alert('Confirmed! Species card added to your collection.')">
+        <button class="unlock-btn" onclick="unlockSpecies(${cand.species_id})">
           ${currentLang === "en" ? "✓ Yes, that matches" : "✓ ஆம், பொருந்துகிறது"}
         </button>
       </div>
     `;
     container.appendChild(card);
+  });
+}
+
+// Unlock Species Card via /api/collection/unlock
+window.unlockSpecies = async function(speciesId) {
+  try {
+    const res = await fetch("/api/collection/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ species_id: speciesId })
+    });
+    const data = await res.json();
+    if (data.success && data.species) {
+      const sp = data.species;
+      const modal = document.getElementById("unlock-modal");
+      const img = document.getElementById("unlock-img");
+      const rarity = document.getElementById("unlock-rarity");
+      const name = document.getElementById("unlock-common-name");
+      const tamil = document.getElementById("unlock-tamil-name");
+      const sci = document.getElementById("unlock-sci-name");
+      const fact = document.getElementById("unlock-fact");
+
+      if (img) img.src = sp.image_local_path || "/static/images/fallback.jpg";
+      if (rarity) {
+        rarity.textContent = sp.rarity;
+        rarity.className = `badge ${sp.rarity === 'Everyday' ? 'badge-everyday' : sp.rarity === 'Regular' ? 'badge-regular' : 'badge-special'}`;
+      }
+      if (name) name.textContent = sp.common_name;
+      if (tamil) tamil.textContent = sp.tamil_name || "";
+      if (sci) sci.textContent = sp.scientific_name;
+      if (fact) fact.textContent = sp.local_fact || sp.summary || "";
+
+      // Play ElevenLabs celebration audio
+      if (data.audio_url && narratorAudio) {
+        narratorAudio.src = data.audio_url;
+        narratorAudio.play().catch(() => {});
+      }
+
+      if (modal) modal.style.display = "flex";
+      loadStats();
+    }
+  } catch (err) {
+    console.error("Unlock error:", err);
+  }
+};
+
+let currentDeck = [];
+
+window.openJournal = async function(filter = "all") {
+  showView("journal-view");
+  await loadJournal(filter);
+};
+
+async function loadJournal(filter = "all") {
+  const grid = document.getElementById("journal-cards-grid");
+  if (!grid) return;
+  grid.innerHTML = "<div style='color: var(--text-muted); padding: 20px; text-align: center;'>Loading field journal...</div>";
+
+  try {
+    const res = await fetch(`/api/collection?category=${currentCategory}`);
+    const data = await res.json();
+    currentDeck = data.deck || [];
+
+    // Update stats banner
+    const statTotal = document.getElementById("journal-stat-total");
+    const statEveryday = document.getElementById("journal-stat-everyday");
+    const statSpecial = document.getElementById("journal-stat-special");
+
+    if (statTotal) statTotal.textContent = `${data.unlocked_count}/${data.total_species}`;
+    if (statEveryday) statEveryday.textContent = `${data.stats_by_rarity.Everyday.unlocked}/${data.stats_by_rarity.Everyday.total}`;
+    if (statSpecial) statSpecial.textContent = `${data.stats_by_rarity['Special find'].unlocked}/${data.stats_by_rarity['Special find'].total}`;
+
+    // Update filter buttons count
+    const allFilterBtn = document.querySelector(".journal-filters [data-filter='all']");
+    const unlockedFilterBtn = document.querySelector(".journal-filters [data-filter='unlocked']");
+    const lockedFilterBtn = document.querySelector(".journal-filters [data-filter='locked']");
+
+    if (allFilterBtn) allFilterBtn.textContent = `All (${data.total_species})`;
+    if (unlockedFilterBtn) unlockedFilterBtn.textContent = `Discovered ✨ (${data.unlocked_count})`;
+    if (lockedFilterBtn) lockedFilterBtn.textContent = `Yet to Find 🔍 (${data.total_species - data.unlocked_count})`;
+
+    renderDeckCards(filter);
+  } catch (err) {
+    console.error("Failed to load journal:", err);
+  }
+}
+
+function renderDeckCards(filter) {
+  const grid = document.getElementById("journal-cards-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  let filtered = currentDeck;
+  if (filter === "unlocked") {
+    filtered = currentDeck.filter(s => s.is_unlocked === 1 || s.is_unlocked === true);
+  } else if (filter === "locked") {
+    filtered = currentDeck.filter(s => !s.is_unlocked);
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="hero-card" style="grid-column: 1 / -1;"><p style="color: var(--text-muted);">No species in this tab yet. Explore outdoors and describe what you see!</p></div>`;
+    return;
+  }
+
+  filtered.forEach(sp => {
+    const card = document.createElement("div");
+    const badgeClass = sp.rarity === "Everyday" ? "badge-everyday"
+      : sp.rarity === "Regular" ? "badge-regular" : "badge-special";
+
+    if (sp.is_unlocked) {
+      card.className = "journal-card";
+      const tamil = sp.tamil_name ? `<div class="journal-card-tamil">${sp.tamil_name}</div>` : "";
+      card.innerHTML = `
+        <div class="journal-card-media">
+          <img class="journal-card-img" src="${sp.image_local_path || '/static/images/fallback.jpg'}" alt="${sp.common_name}" onerror="this.src='/static/images/fallback.jpg'">
+          <span class="badge ${badgeClass}" style="position: absolute; top: 8px; right: 8px;">${sp.rarity}</span>
+          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); color: #86efac;">✓ Discovered</span>
+        </div>
+        <div class="journal-card-body">
+          <div class="journal-card-title">${sp.common_name}</div>
+          ${tamil}
+          <div class="journal-card-sci">${sp.scientific_name}</div>
+          <div class="journal-card-fact">${sp.local_fact || (sp.summary ? sp.summary.slice(0, 90) + '...' : '')}</div>
+        </div>
+      `;
+    } else {
+      card.className = "journal-card locked";
+      const categoryIcon = currentCategory === "birds" ? "🐦" : "🌳";
+      card.innerHTML = `
+        <div class="journal-card-media">
+          <span class="locked-silhouette-icon">${categoryIcon}</span>
+          <span class="badge ${badgeClass}" style="position: absolute; top: 8px; right: 8px;">${sp.rarity}</span>
+          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); color: #94a3b8;">🔒 Undiscovered</span>
+        </div>
+        <div class="journal-card-body">
+          <div class="journal-card-title">${sp.common_name}</div>
+          <div class="journal-card-sci">${sp.scientific_name}</div>
+          <div class="locked-hint-box">
+            🔍 <strong>Field Clue:</strong> Look around local Coimbatore trees and waterbodies. ${sp.rarity === 'Special find' ? 'Special find in this region.' : 'Active resident.'}
+          </div>
+        </div>
+      `;
+    }
+    grid.appendChild(card);
   });
 }
 
@@ -614,6 +797,8 @@ function refreshCurrentScreen() {
     renderCurrentQuestion();
   } else if (summaryView.classList.contains("active")) {
     renderSummaryScreen();
+  } else if (journalView && journalView.classList.contains("active")) {
+    loadJournal();
   }
 }
 
@@ -623,8 +808,9 @@ function resetToHome() {
 }
 
 function showView(viewId) {
-  [homeView, questionView, summaryView, resultsView].forEach((v) => v.classList.remove("active"));
-  document.getElementById(viewId).classList.add("active");
+  [homeView, questionView, summaryView, resultsView, journalView].forEach((v) => v && v.classList.remove("active"));
+  const target = document.getElementById(viewId);
+  if (target) target.classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 

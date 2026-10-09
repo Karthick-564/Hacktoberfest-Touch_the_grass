@@ -21,11 +21,16 @@
   <div id="app-container">
     <!-- Top Header -->
     <header class="app-header">
-      <div class="logo-area" id="home-link">
+      <div class="logo-area" id="home-link" style="cursor: pointer;">
         <span style="font-size: 1.5rem;">🌿</span>
         <span class="app-title">Field Guide</span>
       </div>
-      <button type="button" id="lang-toggle-btn" class="lang-toggle-btn">தமிழ்</button>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Open Field Journal">
+          🎒 <span id="journal-btn-count">0/80</span>
+        </button>
+        <button type="button" id="lang-toggle-btn" class="lang-toggle-btn">தமிழ்</button>
+      </div>
     </header>
 
     <!-- 1. Home View -->
@@ -179,8 +184,77 @@
         + Observe Another Species
       </button>
     </main>
+
+    <!-- 5. Field Journal (Deck) View -->
+    <main id="journal-view" class="view-screen">
+      <div class="question-prompt-box">
+        <h2 class="question-prompt" id="journal-title">My Field Journal</h2>
+        <div class="question-prompt-ta" id="journal-sub">களக் குறிப்பேடு · உங்களின் இயற்கை அட்டைகள்</div>
+      </div>
+
+      <div class="journal-stats-banner">
+        <div class="journal-stat-item">
+          <div class="stat-number" id="journal-stat-total">0/80</div>
+          <div class="stat-label">Discovered</div>
+        </div>
+        <div class="journal-stat-item">
+          <div class="stat-number" id="journal-stat-everyday">0/30</div>
+          <div class="stat-label">Everyday</div>
+        </div>
+        <div class="journal-stat-item">
+          <div class="stat-number" id="journal-stat-special">0/15</div>
+          <div class="stat-label">Special Finds</div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="journal-filters">
+        <button type="button" class="filter-btn active" data-filter="all">All (80)</button>
+        <button type="button" class="filter-btn" data-filter="unlocked">Discovered ✨</button>
+        <button type="button" class="filter-btn" data-filter="locked">Yet to Find 🔍</button>
+      </div>
+
+      <div id="journal-cards-grid" class="journal-cards-grid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <button type="button" id="back-from-journal-btn" class="secondary-btn" style="margin-top: 20px;">
+        ← Back to Observation
+      </button>
+    </main>
   </div>
 
-  <script src="/static/js/app.js?v=7"></script>
+  <!-- 6. Card Unlock Celebration Modal -->
+  <div id="unlock-modal" class="unlock-modal-backdrop" style="display: none;">
+    <div class="unlock-modal-content">
+      <div class="unlock-badge-header">
+        ✨ NEW SPECIES DISCOVERED! ✨
+      </div>
+      <div id="unlock-card-frame" class="unlock-card-frame">
+        <img id="unlock-img" class="unlock-card-img" src="" alt="Species">
+        <div class="unlock-card-body">
+          <span id="unlock-rarity" class="badge">Everyday</span>
+          <h2 id="unlock-common-name" class="unlock-name">Common Name</h2>
+          <div id="unlock-tamil-name" class="unlock-tamil">தமிழ் பெயர்</div>
+          <div id="unlock-sci-name" class="unlock-sci">Scientific Name</div>
+          <p id="unlock-fact" class="unlock-fact">Local grounded fact...</p>
+        </div>
+      </div>
+      <div class="outdoor-prompt-box" style="margin: 12px 0;">
+        <div class="outdoor-prompt-text">Now look up. Watch it for a minute.</div>
+        <div class="outdoor-prompt-sub">Put your phone away and take in the moment.</div>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <button type="button" id="modal-view-journal-btn" class="start-btn" style="flex: 1; padding: 12px;">
+          Open Journal 🎒
+        </button>
+        <button type="button" id="modal-close-btn" class="secondary-btn" style="flex: 1; padding: 12px;">
+          Done ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js?v=8"></script>
 </body>
 </html>
