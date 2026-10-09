@@ -134,6 +134,28 @@ async def transcribe_audio_endpoint(request: Request):
     return {"text": text or ""}
 
 
+from app.encounter import evaluate_encounter_turn
+
+class EncounterPayload(BaseModel):
+    category: str = "birds"
+    user_input: str
+    turn: int = 1
+    target_id: Optional[int] = None
+
+@app.post("/api/encounter/turn")
+async def encounter_turn_endpoint(payload: EncounterPayload):
+    """
+    Pokemon Go style wild nature encounter.
+    Drives 2-way detective dialogue forcing user to look up at the real creature.
+    """
+    result = evaluate_encounter_turn(
+        category=payload.category,
+        user_input=payload.user_input,
+        turn=payload.turn,
+        target_id=payload.target_id
+    )
+    return result
+
 
 from app.matcher import match_observation
 

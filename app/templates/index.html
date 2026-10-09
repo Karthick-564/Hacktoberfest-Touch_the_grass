@@ -50,13 +50,13 @@
         <!-- Rendered dynamically from config -->
       </div>
 
-      <!-- Voice-First Observation Card -->
+      <!-- Voice-First Wild Encounter Card -->
       <div class="voice-card">
         <div class="voice-card-header">
-          <span class="voice-icon-badge">🎙️ SPEECH / VOICE OBSERVATION</span>
-          <span class="voice-sub-badge">ElevenLabs Audio</span>
+          <span class="voice-icon-badge">⚡ WILD NATURE ENCOUNTER</span>
+          <span class="voice-sub-badge">Detective Mode</span>
         </div>
-        <p class="voice-instruction">Keep your eyes on nature. Tap mic to speak what you see:</p>
+        <p class="voice-instruction">Keep your eyes on the creature. Tap mic or pick an example to begin:</p>
         
         <div class="mic-container">
           <button type="button" id="mic-btn" class="mic-btn" title="Click to speak">
@@ -92,7 +92,7 @@
           </div>
 
           <button type="button" id="voice-match-btn" class="start-btn" style="margin-top: 14px; padding: 14px;">
-            Match Observation →
+            ⚡ Start Encounter Detective →
           </button>
         </div>
       </div>
@@ -107,6 +107,84 @@
         <div class="outdoor-prompt-text">Short screen time, more outdoor eyes.</div>
         <div class="outdoor-prompt-sub">Voice-first nature observation.</div>
       </div>
+    </main>
+
+    <!-- 1B. Pokemon Go Wild Encounter View -->
+    <main id="encounter-view" class="view-screen">
+      <div class="hero-tag" style="margin-bottom: 8px;">Wild Encounter Mode</div>
+
+      <!-- Radar Animation -->
+      <div class="radar-wrapper">
+        <div class="radar-wave"></div>
+        <div class="radar-wave"></div>
+        <div class="radar-wave"></div>
+        <div class="radar-center">📡</div>
+      </div>
+
+      <!-- Phase A: Investigating (Detective 2-way dialogue) -->
+      <div id="encounter-investigating" class="encounter-box">
+        <div class="look-up-banner">
+          <span>👁️</span> <span>LOOK UP AT THE CREATURE</span>
+        </div>
+        <div id="encounter-prompt-text" class="diagnostic-challenge">
+          Observing your sighting...
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
+          🎙️ Naturalist Detective is speaking...
+        </div>
+
+        <!-- Diagnostic Choices -->
+        <div id="encounter-choices" class="choice-chips-grid">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- Or Voice Mic for Answering -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 8px;">
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">Or tap mic to answer with your voice:</div>
+          <button type="button" id="encounter-mic-btn" class="mic-btn" style="width: 56px; height: 56px; margin: 0 auto;" title="Speak answer">
+            <span class="mic-icon">🎙️</span>
+          </button>
+          <div id="encounter-mic-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Tap mic to speak</div>
+        </div>
+      </div>
+
+      <!-- Phase B: Gotcha Catch Screen (Revealed ONLY after confirmation) -->
+      <div id="encounter-caught" class="encounter-box" style="display: none;">
+        <div class="gotcha-banner">
+          <div class="gotcha-title">🎉 GOTCHA! WILD SPECIES REGISTERED!</div>
+          <div class="nature-xp-pill">+50 Nature XP Earned</div>
+        </div>
+
+        <div id="caught-card-frame" class="unlock-card-frame">
+          <img id="caught-img" class="unlock-card-img" src="" alt="Caught Species">
+          <div class="unlock-card-body">
+            <span id="caught-rarity" class="badge">Everyday</span>
+            <h2 id="caught-common-name" class="unlock-name">Common Name</h2>
+            <div id="caught-tamil-name" class="unlock-tamil">தமிழ் பெயர்</div>
+            <div id="caught-sci-name" class="unlock-sci">Scientific Name</div>
+            <p id="caught-fact" class="unlock-fact">Local grounded fact...</p>
+          </div>
+        </div>
+
+        <div class="outdoor-prompt-box" style="margin: 14px 0;">
+          <div class="outdoor-prompt-text">🌿 Now put your phone away and touch grass!</div>
+          <div class="outdoor-prompt-sub">Observe this bird in real life for at least 30 seconds.</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 14px;">
+          <button type="button" id="caught-view-journal-btn" class="start-btn" style="flex: 1; padding: 12px;">
+            Open Journal 🎒
+          </button>
+          <button type="button" id="caught-next-btn" class="secondary-btn" style="flex: 1; padding: 12px;">
+            + Spot Another
+          </button>
+        </div>
+      </div>
+
+      <button type="button" id="cancel-encounter-btn" class="skip-btn" style="width: 100%; margin-top: 10px;">
+        ← Back to Home
+      </button>
     </main>
 
     <!-- Hidden audio element for ElevenLabs narrator -->
@@ -255,6 +333,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=8"></script>
+  <script src="/static/js/app.js?v=9"></script>
 </body>
 </html>

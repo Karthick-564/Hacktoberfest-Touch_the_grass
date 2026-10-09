@@ -13,6 +13,7 @@ const questionView = document.getElementById("question-view");
 const summaryView = document.getElementById("summary-view");
 const resultsView = document.getElementById("results-view");
 const journalView = document.getElementById("journal-view");
+const encounterView = document.getElementById("encounter-view");
 const langToggleBtn = document.getElementById("lang-toggle-btn");
 const micBtn = document.getElementById("mic-btn");
 const micStatus = document.getElementById("mic-status");
@@ -129,8 +130,12 @@ async function startVoiceRecording() {
           const transcribed = data.text.trim();
           if (spokenInput) spokenInput.value = transcribed;
           micStatus.textContent = "Transcribed: \"" + transcribed + "\"";
-          // Automatically trigger matching
-          submitSpokenObservation(transcribed);
+          
+          if (encounterState && encounterState.active && encounterView && encounterView.classList.contains("active")) {
+            sendEncounterTurn(transcribed);
+          } else {
+            submitSpokenObservation(transcribed);
+          }
         } else {
           micStatus.textContent = "No words detected. Try speaking again or pick an example below.";
         }
@@ -258,37 +263,136 @@ function setupEventListeners() {
       renderDeckCards(filter);
     });
   });
+
+  // Encounter Mode Event Listeners
+  const cancelEncounterBtn = document.getElementById("cancel-encounter-btn");
+  if (cancelEncounterBtn) cancelEncounterBtn.addEventListener("click", resetToHome);
+
+  const caughtViewJournalBtn = document.getElementById("caught-view-journal-btn");
+  if (caughtViewJournalBtn) caughtViewJournalBtn.addEventListener("click", () => openJournal("all"));
+
+  const caughtNextBtn = document.getElementById("caught-next-btn");
+  if (caughtNextBtn) caughtNextBtn.addEventListener("click", resetToHome);
+
+  const encounterMicBtn = document.getElementById("encounter-mic-btn");
+  if (encounterMicBtn) {
+    encounterMicBtn.addEventListener("click", () => {
+      if (isRecording) {
+        stopVoiceRecording();
+      } else {
+        startVoiceRecording();
+      }
+    });
+  }
 }
 
-// Submit Spoken Observation directly to /api/match
+// Start Pokemon Go Encounter Mode
+let encounterState = {
+  turn: 1,
+  target_id: null,
+  active: false
+};
+
 async function submitSpokenObservation(spokenText) {
-  const matchBtn = document.getElementById("voice-match-btn");
-  if (matchBtn) {
-    matchBtn.disabled = true;
-    matchBtn.textContent = "Analyzing spoken observation...";
+  startEncounter(spokenText);
+}
+
+async function startEncounter(initialText) {
+  encounterState = { turn: 1, target_id: null, active: true };
+  showView("encounter-view");
+
+  const investigating = document.getElementById("encounter-investigating");
+  const caught = document.getElementById("encounter-caught");
+  if (investigating) investigating.style.display = "block";
+  if (caught) caught.style.display = "none";
+
+  const promptText = document.getElementById("encounter-prompt-text");
+  if (promptText) promptText.textContent = "Analyzing your sighting in local Coimbatore records...";
+
+  const choicesContainer = document.getElementById("encounter-choices");
+  if (choicesContainer) {
+    choicesContainer.innerHTML = "<div style='color: var(--accent); font-size: 0.9rem;'>Consulting AI Detective...</div>";
   }
 
-  const payload = {
-    category: currentCategory,
-    answers: { spoken_text: spokenText },
-    free_text: spokenText
-  };
+  await sendEncounterTurn(initialText);
+}
+
+async function sendEncounterTurn(userInput) {
+  const choicesContainer = document.getElementById("encounter-choices");
+  if (choicesContainer) {
+    choicesContainer.innerHTML = "<div style='color: var(--accent); font-size: 0.9rem;'>Investigating diagnostic field marks...</div>";
+  }
 
   try {
-    const res = await fetch("/api/match", {
+    const res = await fetch("/api/encounter/turn", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        category: currentCategory,
+        user_input: userInput,
+        turn: encounterState.turn,
+        target_id: encounterState.target_id
+      })
     });
-    const matchData = await res.json();
-    renderResultsScreen(matchData);
-  } catch (e) {
-    console.error("Match error:", e);
-  } finally {
-    if (matchBtn) {
-      matchBtn.disabled = false;
-      matchBtn.textContent = "Match Spoken Observation →";
+    const data = await res.json();
+
+    if (data.phase === "question") {
+      encounterState.turn = (encounterState.turn || 1) + 1;
+      encounterState.target_id = data.target_id;
+
+      const promptText = document.getElementById("encounter-prompt-text");
+      if (promptText) promptText.textContent = data.diagnostic_prompt;
+
+      if (data.audio_url && narratorAudio) {
+        narratorAudio.src = data.audio_url;
+        narratorAudio.play().catch(() => {});
+      }
+
+      if (choicesContainer) {
+        choicesContainer.innerHTML = "";
+        (data.quick_choices || ["Yes, matches that!", "No, looks different", "Hard to tell"]).forEach((choice) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "choice-chip";
+          btn.innerHTML = `<span>${choice}</span> <span>→</span>`;
+          btn.addEventListener("click", () => sendEncounterTurn(choice));
+          choicesContainer.appendChild(btn);
+        });
+      }
+    } else if (data.phase === "caught") {
+      // Pokemon Go GOTCHA catch reveal!
+      const investigating = document.getElementById("encounter-investigating");
+      const caught = document.getElementById("encounter-caught");
+      if (investigating) investigating.style.display = "none";
+      if (caught) caught.style.display = "block";
+
+      const sp = data.species;
+      const img = document.getElementById("caught-img");
+      const rarity = document.getElementById("caught-rarity");
+      const common = document.getElementById("caught-common-name");
+      const tamil = document.getElementById("caught-tamil-name");
+      const sci = document.getElementById("caught-sci-name");
+      const fact = document.getElementById("caught-fact");
+
+      if (img) img.src = sp.image_local_path || "/static/images/fallback.jpg";
+      if (rarity) {
+        rarity.textContent = sp.rarity;
+        rarity.className = `badge ${sp.rarity === 'Everyday' ? 'badge-everyday' : sp.rarity === 'Regular' ? 'badge-regular' : 'badge-special'}`;
+      }
+      if (common) common.textContent = sp.common_name;
+      if (tamil) tamil.textContent = sp.tamil_name || "";
+      if (sci) sci.textContent = sp.scientific_name;
+      if (fact) fact.textContent = sp.local_fact || sp.summary || "";
+
+      if (data.audio_url && narratorAudio) {
+        narratorAudio.src = data.audio_url;
+        narratorAudio.play().catch(() => {});
+      }
+
+      loadStats();
     }
+  } catch (err) {
+    console.error("Encounter turn error:", err);
   }
 }
 
@@ -803,12 +907,13 @@ function refreshCurrentScreen() {
 }
 
 function resetToHome() {
+  if (encounterState) encounterState.active = false;
   showView("home-view");
   loadStats();
 }
 
 function showView(viewId) {
-  [homeView, questionView, summaryView, resultsView, journalView].forEach((v) => v && v.classList.remove("active"));
+  [homeView, questionView, summaryView, resultsView, journalView, encounterView].forEach((v) => v && v.classList.remove("active"));
   const target = document.getElementById(viewId);
   if (target) target.classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });

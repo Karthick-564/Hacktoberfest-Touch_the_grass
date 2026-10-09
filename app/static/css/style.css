@@ -1017,4 +1017,139 @@ body {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* Pokemon Go Encounter Styles */
+.encounter-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.radar-center {
+  width: 54px;
+  height: 54px;
+  background: #142416;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  z-index: 2;
+  box-shadow: 0 0 16px rgba(132, 204, 22, 0.4);
+}
+.radar-wave {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0.8;
+  animation: radar-pulse 2s infinite ease-out;
+}
+.radar-wave:nth-child(2) {
+  animation-delay: 0.6s;
+}
+.radar-wave:nth-child(3) {
+  animation-delay: 1.2s;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.look-up-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(132, 204, 22, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.diagnostic-challenge {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.45;
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+
+.choice-chips-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.choice-chip {
+  background: #152217;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.15s ease;
+}
+.choice-chip:hover, .choice-chip:active {
+  background: var(--bg-card-selected);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.gotcha-banner {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(132, 204, 22, 0.2) 100%);
+  border: 2px solid #eab308;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  box-shadow: 0 0 24px rgba(234, 179, 8, 0.3);
+}
+.gotcha-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fde047;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.nature-xp-pill {
+  display: inline-block;
+  background: #166534;
+  color: #bbf7d0;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+
 
