@@ -1,0 +1,186 @@
+{
+  "categories": [
+    {
+      "id": "birds",
+      "name_en": "Birds",
+      "name_ta": "பறவைகள்",
+      "emoji": "🦅",
+      "subtitle_en": "Look up into the branches, wires, and skies",
+      "subtitle_ta": "மரக்கிளைகள், மின்கம்பிகள் மற்றும் வானில் பாருங்கள்",
+      "safety_warning_en": null,
+      "safety_warning_ta": null,
+      "questions": [
+        {
+          "id": "size",
+          "prompt_en": "Look at its size. Is it closer to...",
+          "prompt_ta": "அதன் அளவைக் கவனியுங்கள். இது எதற்கு அருகில் உள்ளது...",
+          "type": "single",
+          "options": [
+            { "id": "sparrow", "label_en": "Sparrow-sized", "label_ta": "சிட்டுக்குருவி அளவு (சிறியது)", "emoji": "🐦" },
+            { "id": "myna", "label_en": "Myna-sized", "label_ta": "மைனா அளவு (நடுத்தர சிறியது)", "emoji": "🐤" },
+            { "id": "pigeon", "label_en": "Pigeon-sized", "label_ta": "புறா அளவு (நடுத்தர பெரியது)", "emoji": "🕊️" },
+            { "id": "crow", "label_en": "Crow-sized", "label_ta": "காகம் அளவு (பெரியது)", "emoji": "🦅" },
+            { "id": "bigger_crow", "label_en": "Bigger than a crow", "label_ta": "காகத்தை விட பெரியது (மிகப் பெரியது)", "emoji": "🦚" }
+          ]
+        },
+        {
+          "id": "colors",
+          "prompt_en": "What main colours stand out?",
+          "prompt_ta": "எந்த முக்கிய நிறங்கள் தெளிவாகத் தெரிகின்றன?",
+          "type": "multi",
+          "options": [
+            { "id": "black", "label_en": "Black", "label_ta": "கருப்பு", "swatch": "#18181b" },
+            { "id": "brown", "label_en": "Brown", "label_ta": "பழுப்பு", "swatch": "#78350f" },
+            { "id": "white", "label_en": "White", "label_ta": "வெள்ளை", "swatch": "#f4f4f5" },
+            { "id": "grey", "label_en": "Grey", "label_ta": "சாம்பல்", "swatch": "#71717a" },
+            { "id": "yellow", "label_en": "Yellow", "label_ta": "மஞ்சள்", "swatch": "#eab308" },
+            { "id": "red", "label_en": "Red", "label_ta": "சிவப்பு", "swatch": "#dc2626" },
+            { "id": "green", "label_en": "Green", "label_ta": "பச்சை", "swatch": "#16a34a" },
+            { "id": "blue", "label_en": "Blue", "label_ta": "நீலம்", "swatch": "#2563eb" },
+            { "id": "orange", "label_en": "Orange / Rufous", "label_ta": "ஆரஞ்சு / செம்பழுப்பு", "swatch": "#ea580c" }
+          ]
+        },
+        {
+          "id": "beak_head",
+          "prompt_en": "Look closely at the beak or head. Do you see...",
+          "prompt_ta": "அலகு அல்லது தலையைக் கவனியுங்கள். என்ன தெரிகிறது...",
+          "type": "single",
+          "options": [
+            { "id": "thin", "label_en": "Thin & slender", "label_ta": "மெல்லிய கூரிய அலகு", "emoji": "🥢" },
+            { "id": "thick_cone", "label_en": "Thick & conical", "label_ta": "விதையுண்ணும் தடித்த அலகு", "emoji": "🌰" },
+            { "id": "long", "label_en": "Long & spear-like", "label_ta": "நீண்ட நேரான அலகு", "emoji": "🗡️" },
+            { "id": "curved", "label_en": "Curved or hooked", "label_ta": "வளைந்த அலகு", "emoji": "🪝" },
+            { "id": "crest", "label_en": "Crest / tuft on head", "label_ta": "தலையில் கொண்டை அல்லது குடுமி", "emoji": "👑" },
+            { "id": "eye_patch", "label_en": "Distinct eye ring or patch", "label_ta": "கண்ணைச் சுற்றி வளையம் அல்லது திட்டு", "emoji": "👁️" }
+          ]
+        },
+        {
+          "id": "where_seen",
+          "prompt_en": "Where was the bird when you spotted it?",
+          "prompt_ta": "அதை எங்கு பார்த்தீர்கள்?",
+          "type": "single",
+          "options": [
+            { "id": "ground", "label_en": "On the ground or lawn", "label_ta": "தரை அல்லது புல்வெளியில்", "emoji": "🌱" },
+            { "id": "tree", "label_en": "In a tree or bush canopy", "label_ta": "மரக்கிளையில் அல்லது புதரில்", "emoji": "🌳" },
+            { "id": "wire", "label_en": "On a wire, roof or post", "label_ta": "மின்கம்பி அல்லது கட்டடத்தில்", "emoji": "⚡" },
+            { "id": "water", "label_en": "Near water, tank or wetland", "label_ta": "ஏரி, குளம் அல்லது நீர்நிலையில்", "emoji": "💧" },
+            { "id": "sky", "label_en": "Soaring high in the sky", "label_ta": "வானில் உயரே பறக்கிறது", "emoji": "☁️" }
+          ]
+        },
+        {
+          "id": "behavior",
+          "prompt_en": "What was it doing?",
+          "prompt_ta": "அது என்ன செய்து கொண்டிருந்தது?",
+          "type": "single",
+          "options": [
+            { "id": "hopping", "label_en": "Hopping & scratching for food", "label_ta": "தத்தி தத்தி இரை தேடுகிறது", "emoji": "🪱" },
+            { "id": "perched", "label_en": "Perched still, looking around", "label_ta": "அமைதியாக அமர்ந்து நோக்குகிறது", "emoji": "👀" },
+            { "id": "swimming", "label_en": "Swimming or wading in mud", "label_ta": "நீந்துகிறது அல்லது சேற்றில் நடக்கிறது", "emoji": "🦆" },
+            { "id": "flying", "label_en": "Darting rapidly in flight", "label_ta": "வேகமாகப் பறக்கிறது", "emoji": "💨" },
+            { "id": "calling", "label_en": "Singing or calling repeatedly", "label_ta": "தொடர்ந்து குரல் கொடுக்கிறது", "emoji": "🎵" }
+          ],
+          "has_free_text": true,
+          "free_text_prompt_en": "Describe any sound or call in your own words (optional)",
+          "free_text_prompt_ta": "அதன் குரல் அல்லது ஒலியை சுருக்கமாக விவரிக்கவும் (விருப்பத்தேர்வு)",
+          "free_text_placeholder_en": "e.g. sharp 'ku-roo', metallic clink, or sweet whistles",
+          "free_text_placeholder_ta": "எ.கா. கூ-கூ கூவல், உலோகம் மோதும் ஒலி, அல்லது கீச்சிடல்"
+        }
+      ]
+    },
+    {
+      "id": "trees",
+      "name_en": "Trees",
+      "name_ta": "மரங்கள்",
+      "emoji": "🌳",
+      "subtitle_en": "Observe leaves, bark, and growth shape",
+      "subtitle_ta": "இலைகள், பட்டை மற்றும் வளர்ச்சியை கவனியுங்கள்",
+      "safety_warning_en": "Never taste leaves, fruit or seeds to identify them.",
+      "safety_warning_ta": "அடையாளம் காண இலைகள், பழங்கள் அல்லது விதைகளை ஒருபோதும் சுவைக்காதீர்கள்.",
+      "questions": [
+        {
+          "id": "leaf_shape",
+          "prompt_en": "Look at an intact leaf. What is its overall shape?",
+          "prompt_ta": "ஒரு முழு இலையைக் கவனியுங்கள். அதன் வடிவம் என்ன?",
+          "type": "single",
+          "options": [
+            { "id": "oval", "label_en": "Oval or rounded", "label_ta": "முட்டை அல்லது வட்ட வடிவம்", "emoji": "🍃" },
+            { "id": "heart", "label_en": "Heart-shaped (broad base)", "label_ta": "இதய வடிவம் (அகன்ற அடி)", "emoji": "💚" },
+            { "id": "needle", "label_en": "Needle-like or very narrow", "label_ta": "ஊசி போன்ற அல்லது மிக மெல்லிய", "emoji": "🌾" },
+            { "id": "lobed", "label_en": "Lobed (hand-like fingers)", "label_ta": "கைவிரல் போன்ற பிளவுகள்", "emoji": "🍁" },
+            { "id": "fan", "label_en": "Fan-shaped (palm-like)", "label_ta": "விசிறி வடிவம் (பனை போன்றது)", "emoji": "🌴" }
+          ]
+        },
+        {
+          "id": "leaf_arrangement",
+          "prompt_en": "How are the leaves arranged on the branch?",
+          "prompt_ta": "கிளையில் இலைகள் எவ்வாறு அமைந்துள்ளன?",
+          "type": "single",
+          "options": [
+            { "id": "single_alternate", "label_en": "Single leaves alternating along twig", "label_ta": "ஒன்றன்பின் ஒன்றாக மாற்று அமைவு", "emoji": "🌿" },
+            { "id": "paired_opposite", "label_en": "Paired opposite each other", "label_ta": "நேருக்கு நேர் ஜோடி அமைவு", "emoji": "🌱" },
+            { "id": "feathery_compound", "label_en": "Feathery compound (neem/tamarind style)", "label_ta": "இறகு போன்ற கூட்டு இலை (வேம்பு/புளி)", "emoji": "🪶" }
+          ]
+        },
+        {
+          "id": "bark",
+          "prompt_en": "Feel or look at the trunk bark:",
+          "prompt_ta": "மரப்பட்டையைப் பாருங்கள் அல்லது தொட்டுணருங்கள்:",
+          "type": "single",
+          "options": [
+            { "id": "smooth", "label_en": "Smooth & pale", "label_ta": "வழுவழுப்பானது & வெளிர் நிறம்", "emoji": "🪵" },
+            { "id": "rough_furrowed", "label_en": "Rough with deep vertical furrows", "label_ta": "ஆழமான வரிகளுடன் கரடுமுரடானது", "emoji": "🧱" },
+            { "id": "peeling", "label_en": "Peeling in flakes or sheets", "label_ta": "செதில்களாக உரிக்கக்கூடியது", "emoji": "📜" },
+            { "id": "fibrous", "label_en": "Fibrous or ringed (palm trunk)", "label_ta": "வளையங்கள் கொண்ட நார் போன்றது (பனை/தென்னை)", "emoji": "🥥" }
+          ]
+        },
+        {
+          "id": "height",
+          "prompt_en": "How tall is the tree compared to a building?",
+          "prompt_ta": "கட்டடத்தோடு ஒப்பிடுகையில் மரத்தின் உயரம் எவ்வளவு?",
+          "type": "single",
+          "options": [
+            { "id": "small", "label_en": "Small tree / shrub (under 1 story)", "label_ta": "சிறியது / புதர் மரம் (ஒரு மாடிக்குக் கீழ்)", "emoji": "🪴" },
+            { "id": "medium", "label_en": "Medium tree (1 to 2 stories)", "label_ta": "நடுத்தரமானது (1-2 மாடி உயரம்)", "emoji": "🏡" },
+            { "id": "large", "label_en": "Large canopy tree (above 2 stories)", "label_ta": "மிகப் பெரிய மரம் (2 மாடிக்கு மேல்)", "emoji": "🏢" }
+          ]
+        },
+        {
+          "id": "flowers_fruit",
+          "prompt_en": "Do you see flowers, pods, or fruit right now?",
+          "prompt_ta": "இப்போது பூக்கள், காய்கள் அல்லது பழங்கள் தெரிகின்றனவா?",
+          "type": "single",
+          "options": [
+            { "id": "visible_flowers", "label_en": "Bright flowers visible", "label_ta": "தெளிவான மலர்கள் பூத்துள்ளன", "emoji": "🌸" },
+            { "id": "visible_pods", "label_en": "Hanging pods or legumes", "label_ta": "தொங்கும் நெற்றுக்கள் / காய்கள்", "emoji": "🫛" },
+            { "id": "visible_fruit", "label_en": "Fleshy fruit or berries", "label_ta": "பழங்கள் அல்லது கொட்டைகள்", "emoji": "🥭" },
+            { "id": "none", "label_en": "Only green foliage visible", "label_ta": "இலைகள் மட்டுமே தெரிகின்றன", "emoji": "🍃" }
+          ]
+        },
+        {
+          "id": "crushed_smell",
+          "prompt_en": "Gently crush a fallen leaf in your fingers. Any scent?",
+          "prompt_ta": "கீழே விழுந்த இலையை விரலில் நசுக்கிப் பாருங்கள். ஏதேனும் மணம் உண்டா?",
+          "type": "single",
+          "options": [
+            { "id": "citrus", "label_en": "Strong citrus or pungent aroma", "label_ta": "எலுமிச்சை அல்லது காரமான நறுமணம்", "emoji": "🍋" },
+            { "id": "medicinal", "label_en": "Bitter or medicinal aroma (like neem)", "label_ta": "கசப்பு அல்லது மூலிகை மணம் (வேம்பு போல)", "emoji": "🌿" },
+            { "id": "resinous", "label_en": "Sweet, resinous or eucalyptus-like", "label_ta": "பிசின் அல்லது தைல மணம்", "emoji": "🌲" },
+            { "id": "none", "label_en": "No distinct scent (plain leaf)", "label_ta": "குறிப்பிட்ட மணம் இல்லை", "emoji": "🍃" }
+          ]
+        },
+        {
+          "id": "habitat",
+          "prompt_en": "Where is it growing?",
+          "prompt_ta": "அது எங்கு வளர்கிறது?",
+          "type": "single",
+          "options": [
+            { "id": "avenue", "label_en": "Roadside avenue or urban park", "label_ta": "சாலையோரம் அல்லது நகர்ப்புற பூங்கா", "emoji": "🛣️" },
+            { "id": "wetland", "label_en": "Near tank bund, canal or marsh", "label_ta": "ஏரிக்கரை, கால்வாய் அல்லது சதுப்புநிலம்", "emoji": "🌊" },
+            { "id": "campus", "label_en": "Campus or botanical garden", "label_ta": "பல்கலைக்கழக வளாகம் அல்லது தோட்டம்", "emoji": "🏛️" },
+            { "id": "scrub", "label_en": "Dry scrubland or foothills", "label_ta": "வறண்ட புதர்நிலம் அல்லது மலையடிவாரம்", "emoji": "⛰️" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d120e">
+  <meta name="description" content="Field Guide - Offline collectible nature guide that teaches you to observe.">
+  <title>Field Guide | கள வழிகாட்டி</title>
+  <script>
+    // Ensure browsers do not hold stale service worker during development
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var r of regs) r.unregister();
+      });
+    }
+  </script>
+  <!-- Cache-busting query strings for instant hot-reload -->
+  <link rel="stylesheet" href="/static/css/style.css?v=5">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-area" id="home-link">
+        <span style="font-size: 1.5rem;">🌿</span>
+        <span class="app-title">Field Guide</span>
+      </div>
+      <button type="button" id="lang-toggle-btn" class="lang-toggle-btn">தமிழ்</button>
+    </header>
+
+    <!-- 1. Home View -->
+    <main id="home-view" class="view-screen active">
+      <div class="hero-card">
+        <div class="hero-tag">Touch Grass Challenge</div>
+        <h1 class="hero-title">Learn to Look</h1>
+        <p class="hero-subtitle">Put the screen away. Look up at the real world and describe what you see.</p>
+        <div class="stat-pill">
+          <span>📍</span>
+          <span id="stats-display">Loading local records...</span>
+        </div>
+      </div>
+
+      <div class="category-selection-title">Select Category</div>
+      <div id="category-grid" class="category-grid">
+        <!-- Rendered dynamically from config -->
+      </div>
+
+      <!-- Voice-First Observation Card -->
+      <div class="voice-card">
+        <div class="voice-card-header">
+          <span class="voice-icon-badge">🎙️ SPEECH / VOICE OBSERVATION</span>
+          <span class="voice-sub-badge">ElevenLabs Audio</span>
+        </div>
+        <p class="voice-instruction">Keep your eyes on nature. Tap mic to speak what you see:</p>
+        
+        <div class="mic-container">
+          <button type="button" id="mic-btn" class="mic-btn" title="Click to speak">
+            <span class="mic-icon">🎙️</span>
+          </button>
+          
+          <!-- Live Audio Volume Meter -->
+          <div id="volume-meter-box" style="width: 140px; height: 8px; background: #1c271e; border-radius: 4px; overflow: hidden; display: none;">
+            <div id="volume-fill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.08s ease;"></div>
+          </div>
+
+          <div id="mic-status" class="mic-status">Tap mic to speak</div>
+        </div>
+
+        <div class="transcript-box" style="display: block;">
+          <div class="transcript-label">Captured Observation:</div>
+          <textarea id="spoken-input" class="free-text-input" rows="2" style="margin-top: 4px; resize: vertical; font-size: 1rem;" placeholder="e.g. A black bird with a crest on its head and red under the tail..."></textarea>
+          
+          <!-- Quick Sample Observation Chips for Instant Testing -->
+          <div style="margin-top: 10px; text-align: left;">
+            <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 6px;">Try an example observation:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
+                🐦 Crest & red vent
+              </button>
+              <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
+                🐤 Yellow bill & eye patch
+              </button>
+              <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
+                🦅 Forked tail on wire
+              </button>
+            </div>
+          </div>
+
+          <button type="button" id="voice-match-btn" class="start-btn" style="margin-top: 14px; padding: 14px;">
+            Match Observation →
+          </button>
+        </div>
+      </div>
+
+      <!-- Alternative Tap-Based Flow Button -->
+      <button type="button" id="start-observation-btn" class="secondary-btn" style="margin-top: 14px;">
+        <span>Or Observe via Step-by-Step Taps</span>
+        <span>→</span>
+      </button>
+
+      <div class="outdoor-prompt-box">
+        <div class="outdoor-prompt-text">Short screen time, more outdoor eyes.</div>
+        <div class="outdoor-prompt-sub">Voice-first nature observation.</div>
+      </div>
+    </main>
+
+    <!-- Hidden audio element for ElevenLabs narrator -->
+    <audio id="narrator-audio" preload="auto"></audio>
+
+    <!-- 2. Question View -->
+    <main id="question-view" class="view-screen">
+      <div class="step-indicator">
+        <span id="step-counter">Question 1 of 5</span>
+        <span>Tap to select</span>
+      </div>
+      <div class="progress-bar-container">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+      </div>
+
+      <!-- Category Safety Notice (Trees) -->
+      <div id="safety-banner" class="safety-banner" style="display: none;">
+        <span>⚠️</span>
+        <span id="safety-text">Never taste leaves, fruit or seeds to identify them.</span>
+      </div>
+
+      <!-- Grounded Observation Prompt -->
+      <div class="question-prompt-box">
+        <h2 id="question-prompt" class="question-prompt">What do you observe?</h2>
+        <div id="question-prompt-sub" class="question-prompt-ta">கவனியுங்கள்</div>
+      </div>
+
+      <!-- Options container (populated from categories.json) -->
+      <div id="options-container"></div>
+
+      <!-- Optional Sound / Free text input -->
+      <div id="free-text-section" class="free-text-box" style="display: none;">
+        <label id="free-text-title" class="free-text-label">Describe any sound or call:</label>
+        <input type="text" id="free-text-input" class="free-text-input" autocomplete="off" />
+      </div>
+
+      <!-- Action Footer -->
+      <div class="question-nav-bar">
+        <button type="button" id="skip-btn" class="skip-btn">Skip Question</button>
+        <button type="button" id="next-btn" class="next-btn">Next →</button>
+      </div>
+    </main>
+
+    <!-- 3. Summary View -->
+    <main id="summary-view" class="view-screen">
+      <div class="question-prompt-box">
+        <h2 class="question-prompt">Review Your Field Notes</h2>
+        <div class="question-prompt-ta">உங்கள் குறிப்புகளைச் சரிபார்க்கவும்</div>
+      </div>
+
+      <div class="summary-card">
+        <div id="summary-items" class="summary-list"></div>
+      </div>
+
+      <button type="button" id="submit-matches-btn" class="start-btn">
+        Find Candidate Matches
+      </button>
+    </main>
+
+    <!-- 4. Candidate Results View -->
+    <main id="results-view" class="view-screen">
+      <div class="question-prompt-box">
+        <h2 class="question-prompt">Candidate Species</h2>
+        <div class="question-prompt-ta">பொருத்தமான வகைகள்</div>
+      </div>
+
+      <div id="candidates-container"></div>
+
+      <div class="outdoor-prompt-box">
+        <div class="outdoor-prompt-text">Now look up. Watch it for a minute.</div>
+        <div class="outdoor-prompt-sub">Notice how it moves before returning to your walk.</div>
+      </div>
+
+      <button type="button" id="new-observation-btn" class="skip-btn" style="margin-top: 16px; width: 100%;">
+        + Observe Another Species
+      </button>
+    </main>
+  </div>
+
+  <script src="/static/js/app.js?v=7"></script>
+</body>
+</html>
