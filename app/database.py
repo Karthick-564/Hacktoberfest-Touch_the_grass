@@ -56,6 +56,14 @@ def init_db(db_path: Optional[Path] = None):
             UNIQUE(species_id)
         );
 
+        CREATE TABLE IF NOT EXISTS user_profile (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            xp INTEGER NOT NULL DEFAULT 0,
+            streak_days INTEGER NOT NULL DEFAULT 1,
+            last_active_date DATE DEFAULT CURRENT_DATE
+        );
+        INSERT OR IGNORE INTO user_profile (id, xp, streak_days) VALUES (1, 0, 1);
+
         CREATE INDEX IF NOT EXISTS idx_species_region ON species(region_id);
         CREATE INDEX IF NOT EXISTS idx_species_category ON species(category);
         """)

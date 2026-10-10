@@ -43,7 +43,7 @@ async function init() {
 
   setupEventListeners();
   loadStats();
-  renderHomeScreen();
+  loadQuests();
 }
 
 window.setPreset = function(text) {
@@ -209,13 +209,28 @@ function setupEventListeners() {
 
   if (micBtn) {
     micBtn.addEventListener("click", () => {
+      const labelEl = document.getElementById("mic-btn-label");
       if (isRecording) {
         stopVoiceRecording();
+        if (labelEl) labelEl.textContent = "Speak";
       } else {
         startVoiceRecording();
+        if (labelEl) labelEl.textContent = "Listening...";
       }
     });
   }
+
+  // Category Tabs
+  document.querySelectorAll("#category-tabs .category-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const target = e.currentTarget;
+      const cat = target.getAttribute("data-cat");
+      currentCategory = cat;
+      document.querySelectorAll("#category-tabs .category-tab-btn").forEach(b => b.classList.remove("selected"));
+      target.classList.add("selected");
+      loadStats();
+    });
+  });
 
 
   const voiceMatchBtn = document.getElementById("voice-match-btn");
@@ -390,6 +405,7 @@ async function sendEncounterTurn(userInput) {
       }
 
       loadStats();
+      loadQuests();
     }
   } catch (err) {
     console.error("Encounter turn error:", err);
@@ -416,28 +432,56 @@ async function loadStats() {
   }
 }
 
-// Render Home Category Selector
-function renderHomeScreen() {
-  if (!appConfig) return;
-  const grid = document.getElementById("category-grid");
-  grid.innerHTML = "";
+// Load Daily Quests & Explorer XP Progress
+async function loadQuests() {
+  try {
+    const res = await fetch("/api/quests");
+    const data = await res.json();
+    if (data.profile) {
+      const p = data.profile;
+      const rankTitle = currentLang === "en" ? `Level ${p.level} · ${p.rank_title}` : `நிலை ${p.level} · ${p.rank_title_ta}`;
+      const rankEl = document.getElementById("rank-title");
+      if (rankEl) rankEl.textContent = rankTitle;
 
-  appConfig.categories.forEach((cat) => {
-    const card = document.createElement("div");
-    card.className = `category-card ${cat.id === currentCategory ? "selected" : ""}`;
-    card.innerHTML = `
-      <div class="category-icon">${cat.emoji}</div>
-      <div class="category-name">${currentLang === "en" ? cat.name_en : cat.name_ta}</div>
-      <div class="category-name-ta">${currentLang === "en" ? cat.name_ta : cat.name_en}</div>
-    `;
-    card.addEventListener("click", () => {
-      currentCategory = cat.id;
-      document.querySelectorAll(".category-card").forEach((c) => c.classList.remove("selected"));
-      card.classList.add("selected");
-      loadStats();
-    });
-    grid.appendChild(card);
-  });
+      const streakEl = document.getElementById("streak-tag");
+      if (streakEl) streakEl.textContent = `🔥 ${p.streak_days} Day Streak`;
+
+      const barFill = document.getElementById("xp-bar-fill");
+      if (barFill) barFill.style.width = `${p.progress_pct}%`;
+
+      const currLabel = document.getElementById("xp-current-label");
+      if (currLabel) currLabel.textContent = `${p.total_xp} Total XP`;
+
+      const nextLabel = document.getElementById("xp-next-label");
+      if (nextLabel) nextLabel.textContent = `Next: ${p.xp_next} XP`;
+    }
+
+    if (data.quests) {
+      const questsContainer = document.getElementById("quests-list");
+      if (questsContainer) {
+        questsContainer.innerHTML = "";
+        data.quests.forEach((q) => {
+          const item = document.createElement("div");
+          item.className = `quest-item ${q.completed ? "completed" : ""}`;
+          const title = currentLang === "en" ? q.title : q.title_ta;
+          const desc = currentLang === "en" ? q.desc : q.desc_ta;
+          item.innerHTML = `
+            <div class="quest-left">
+              <span style="font-size: 1.1rem;">${q.icon}</span>
+              <div>
+                <div class="quest-title">${title} ${q.completed ? "✓" : ""}</div>
+                <div class="quest-desc">${desc}</div>
+              </div>
+            </div>
+            <span class="quest-reward">${q.completed ? "Done ✓" : `+${q.reward_xp} XP`}</span>
+          `;
+          questsContainer.appendChild(item);
+        });
+      }
+    }
+  } catch (err) {
+    console.log("Failed to load quests:", err);
+  }
 }
 
 function startObservation() {
@@ -896,7 +940,8 @@ function renderDeckCards(filter) {
 }
 
 function refreshCurrentScreen() {
-  renderHomeScreen();
+  loadStats();
+  loadQuests();
   if (questionView.classList.contains("active")) {
     renderCurrentQuestion();
   } else if (summaryView.classList.contains("active")) {
@@ -910,6 +955,7 @@ function resetToHome() {
   if (encounterState) encounterState.active = false;
   showView("home-view");
   loadStats();
+  loadQuests();
 }
 
 function showView(viewId) {

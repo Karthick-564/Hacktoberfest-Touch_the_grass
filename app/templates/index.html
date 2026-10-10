@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0d120e">
-  <meta name="description" content="Field Guide - Offline collectible nature guide that teaches you to observe.">
+  <meta name="theme-color" content="#f6f8f6">
+  <meta name="description" content="Field Guide - Voice-first offline nature guide for Hacktoberfest Touch Grass Challenge.">
   <title>Field Guide | கள வழிகாட்டி</title>
   <script>
-    // Ensure browsers do not hold stale service worker during development
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         for (var r of regs) r.unregister();
       });
     }
   </script>
-  <!-- Cache-busting query strings for instant hot-reload -->
-  <link rel="stylesheet" href="/static/css/style.css?v=5">
+  <link rel="stylesheet" href="/static/css/style.css?v=10">
 </head>
 <body>
   <div id="app-container">
     <!-- Top Header -->
     <header class="app-header">
-      <div class="logo-area" id="home-link" style="cursor: pointer;">
-        <span style="font-size: 1.5rem;">🌿</span>
+      <div class="logo-area" id="home-link" title="Home">
+        <span style="font-size: 1.3rem;">🌿</span>
         <span class="app-title">Field Guide</span>
       </div>
-      <div style="display: flex; gap: 8px; align-items: center;">
+      <div style="display: flex; gap: 6px; align-items: center;">
         <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Open Field Journal">
           🎒 <span id="journal-btn-count">0/80</span>
         </button>
@@ -35,194 +33,220 @@
 
     <!-- 1. Home View -->
     <main id="home-view" class="view-screen active">
-      <div class="hero-card">
-        <div class="hero-tag">Touch Grass Challenge</div>
-        <h1 class="hero-title">Learn to Look</h1>
-        <p class="hero-subtitle">Put the screen away. Look up at the real world and describe what you see.</p>
-        <div class="stat-pill">
-          <span>📍</span>
-          <span id="stats-display">Loading local records...</span>
-        </div>
-      </div>
-
-      <div class="category-selection-title">Select Category</div>
-      <div id="category-grid" class="category-grid">
-        <!-- Rendered dynamically from config -->
-      </div>
-
-      <!-- Voice-First Wild Encounter Card -->
-      <div class="voice-card">
-        <div class="voice-card-header">
-          <span class="voice-icon-badge">⚡ WILD NATURE ENCOUNTER</span>
-          <span class="voice-sub-badge">Detective Mode</span>
-        </div>
-        <p class="voice-instruction">Keep your eyes on the creature. Tap mic or pick an example to begin:</p>
-        
-        <div class="mic-container">
-          <button type="button" id="mic-btn" class="mic-btn" title="Click to speak">
-            <span class="mic-icon">🎙️</span>
-          </button>
-          
-          <!-- Live Audio Volume Meter -->
-          <div id="volume-meter-box" style="width: 140px; height: 8px; background: #1c271e; border-radius: 4px; overflow: hidden; display: none;">
-            <div id="volume-fill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.08s ease;"></div>
+      <!-- Explorer Rank & Level Card (Option A) -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="rank-badge">
+            <span id="rank-icon">🌱</span>
+            <span id="rank-title">Level 1 · Seedling Scout</span>
           </div>
-
-          <div id="mic-status" class="mic-status">Tap mic to speak</div>
+          <div class="streak-tag" id="streak-tag">🔥 1 Day Streak</div>
         </div>
+        <div class="xp-bar-bg">
+          <div id="xp-bar-fill" class="xp-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="xp-labels">
+          <span id="xp-current-label">0 XP</span>
+          <span id="xp-next-label">Next Level: 100 XP</span>
+        </div>
+      </div>
 
-        <div class="transcript-box" style="display: block;">
-          <div class="transcript-label">Captured Observation:</div>
-          <textarea id="spoken-input" class="free-text-input" rows="2" style="margin-top: 4px; resize: vertical; font-size: 1rem;" placeholder="e.g. A black bird with a crest on its head and red under the tail..."></textarea>
-          
-          <!-- Quick Sample Observation Chips for Instant Testing -->
-          <div style="margin-top: 10px; text-align: left;">
-            <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 6px;">Try an example observation:</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
-                🐦 Crest & red vent
-              </button>
-              <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
-                🐤 Yellow bill & eye patch
-              </button>
-              <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
-                🦅 Forked tail on wire
-              </button>
+      <!-- Today's Daily Field Quests (Option A) -->
+      <div class="quests-card">
+        <div class="quests-header">
+          <span id="quests-title">🎯 TODAY'S FIELD MISSIONS</span>
+          <span style="font-size: 0.72rem; color: var(--accent); font-weight: 700;">Coimbatore</span>
+        </div>
+        <div id="quests-list" class="quests-list">
+          <div class="quest-item" id="quest-touch-grass">
+            <div class="quest-left">
+              <span style="font-size: 1.1rem;">🌱</span>
+              <div>
+                <div class="quest-title">Touch Grass Today</div>
+                <div class="quest-desc">Step outside & log 1 wild sighting</div>
+              </div>
             </div>
+            <span class="quest-reward">+50 XP</span>
           </div>
+          <div class="quest-item" id="quest-perched">
+            <div class="quest-left">
+              <span style="font-size: 1.1rem;">⚡</span>
+              <div>
+                <div class="quest-title">Perched Watcher</div>
+                <div class="quest-desc">Find a bird sitting on branch or wire</div>
+              </div>
+            </div>
+            <span class="quest-reward">+50 XP</span>
+          </div>
+          <div class="quest-item" id="quest-color">
+            <div class="quest-left">
+              <span style="font-size: 1.1rem;">🎨</span>
+              <div>
+                <div class="quest-title">Vibrant Plumage</div>
+                <div class="quest-desc">Spot a creature with yellow or red marks</div>
+              </div>
+            </div>
+            <span class="quest-reward">+50 XP</span>
+          </div>
+        </div>
+      </div>
 
-          <button type="button" id="voice-match-btn" class="start-btn" style="margin-top: 14px; padding: 14px;">
-            ⚡ Start Encounter Detective →
+      <!-- Category Selector Tabs -->
+      <div class="category-tabs" id="category-tabs">
+        <button type="button" class="category-tab-btn selected" data-cat="birds">
+          <span>🐦</span> <span>Birds (80)</span>
+        </button>
+        <button type="button" class="category-tab-btn" data-cat="trees">
+          <span>🌳</span> <span>Trees & Flora</span>
+        </button>
+      </div>
+
+      <!-- Wild Encounter Detective Card -->
+      <div class="encounter-card">
+        <div class="encounter-card-header">
+          <span class="encounter-badge">⚡ WILD ENCOUNTER</span>
+          <span class="encounter-sub-badge" id="stats-display">80 Coimbatore Species</span>
+        </div>
+        <p class="encounter-instruction">Describe what you see. The AI will challenge your eyes:</p>
+
+        <textarea id="spoken-input" class="free-text-input" rows="2" placeholder="e.g. A black bird with a crest on its head and red under tail..."></textarea>
+
+        <!-- Live Audio Volume Line -->
+        <div id="volume-meter-box" class="volume-meter">
+          <div id="volume-fill" class="volume-meter-fill"></div>
+        </div>
+        <div id="mic-status" class="mic-status-text">Tap mic or pick an example below</div>
+
+        <!-- Balanced Actions Row -->
+        <div class="actions-row">
+          <button type="button" id="mic-btn" class="mic-toggle-btn" title="Speak observation">
+            <span class="mic-icon">🎙️</span>
+            <span id="mic-btn-label">Speak</span>
+          </button>
+          <button type="button" id="voice-match-btn" class="start-btn">
+            <span>⚡ Launch Encounter →</span>
+          </button>
+        </div>
+
+        <!-- Sample Observation Chips -->
+        <div class="presets-label">Try an example sighting:</div>
+        <div class="presets-wrap">
+          <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
+            🐦 Crest & red vent
+          </button>
+          <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
+            🐤 Yellow bill & eye patch
+          </button>
+          <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
+            🦅 Forked tail on wire
           </button>
         </div>
       </div>
 
-      <!-- Alternative Tap-Based Flow Button -->
-      <button type="button" id="start-observation-btn" class="secondary-btn" style="margin-top: 14px;">
-        <span>Or Observe via Step-by-Step Taps</span>
+      <!-- Step-by-Step Taps Alternative Button -->
+      <button type="button" id="start-observation-btn" class="secondary-btn">
+        <span>👁️ Or Identify via 5 Step-by-Step Taps</span>
         <span>→</span>
       </button>
 
-      <div class="outdoor-prompt-box">
-        <div class="outdoor-prompt-text">Short screen time, more outdoor eyes.</div>
-        <div class="outdoor-prompt-sub">Voice-first nature observation.</div>
+      <div class="outdoor-note">
+        🌱 Keep screen time short. Look up at real nature.
       </div>
-    </main>
-
-    <!-- 1B. Pokemon Go Wild Encounter View -->
-    <main id="encounter-view" class="view-screen">
-      <div class="hero-tag" style="margin-bottom: 8px;">Wild Encounter Mode</div>
-
-      <!-- Radar Animation -->
-      <div class="radar-wrapper">
-        <div class="radar-wave"></div>
-        <div class="radar-wave"></div>
-        <div class="radar-wave"></div>
-        <div class="radar-center">📡</div>
-      </div>
-
-      <!-- Phase A: Investigating (Detective 2-way dialogue) -->
-      <div id="encounter-investigating" class="encounter-box">
-        <div class="look-up-banner">
-          <span>👁️</span> <span>LOOK UP AT THE CREATURE</span>
-        </div>
-        <div id="encounter-prompt-text" class="diagnostic-challenge">
-          Observing your sighting...
-        </div>
-
-        <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
-          🎙️ Naturalist Detective is speaking...
-        </div>
-
-        <!-- Diagnostic Choices -->
-        <div id="encounter-choices" class="choice-chips-grid">
-          <!-- Filled dynamically -->
-        </div>
-
-        <!-- Or Voice Mic for Answering -->
-        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 8px;">
-          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">Or tap mic to answer with your voice:</div>
-          <button type="button" id="encounter-mic-btn" class="mic-btn" style="width: 56px; height: 56px; margin: 0 auto;" title="Speak answer">
-            <span class="mic-icon">🎙️</span>
-          </button>
-          <div id="encounter-mic-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Tap mic to speak</div>
-        </div>
-      </div>
-
-      <!-- Phase B: Gotcha Catch Screen (Revealed ONLY after confirmation) -->
-      <div id="encounter-caught" class="encounter-box" style="display: none;">
-        <div class="gotcha-banner">
-          <div class="gotcha-title">🎉 GOTCHA! WILD SPECIES REGISTERED!</div>
-          <div class="nature-xp-pill">+50 Nature XP Earned</div>
-        </div>
-
-        <div id="caught-card-frame" class="unlock-card-frame">
-          <img id="caught-img" class="unlock-card-img" src="" alt="Caught Species">
-          <div class="unlock-card-body">
-            <span id="caught-rarity" class="badge">Everyday</span>
-            <h2 id="caught-common-name" class="unlock-name">Common Name</h2>
-            <div id="caught-tamil-name" class="unlock-tamil">தமிழ் பெயர்</div>
-            <div id="caught-sci-name" class="unlock-sci">Scientific Name</div>
-            <p id="caught-fact" class="unlock-fact">Local grounded fact...</p>
-          </div>
-        </div>
-
-        <div class="outdoor-prompt-box" style="margin: 14px 0;">
-          <div class="outdoor-prompt-text">🌿 Now put your phone away and touch grass!</div>
-          <div class="outdoor-prompt-sub">Observe this bird in real life for at least 30 seconds.</div>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 14px;">
-          <button type="button" id="caught-view-journal-btn" class="start-btn" style="flex: 1; padding: 12px;">
-            Open Journal 🎒
-          </button>
-          <button type="button" id="caught-next-btn" class="secondary-btn" style="flex: 1; padding: 12px;">
-            + Spot Another
-          </button>
-        </div>
-      </div>
-
-      <button type="button" id="cancel-encounter-btn" class="skip-btn" style="width: 100%; margin-top: 10px;">
-        ← Back to Home
-      </button>
     </main>
 
     <!-- Hidden audio element for ElevenLabs narrator -->
     <audio id="narrator-audio" preload="auto"></audio>
 
-    <!-- 2. Question View -->
+    <!-- 1B. Pokemon Go Wild Encounter View -->
+    <main id="encounter-view" class="view-screen">
+      <div class="encounter-screen-card">
+        <!-- Radar Icon -->
+        <div class="encounter-radar-slim">📡</div>
+
+        <!-- Phase A: Investigating (2-way Detective Dialogue) -->
+        <div id="encounter-investigating">
+          <div class="look-up-pill">
+            <span>👁️</span> <span>LOOK UP AT THE CREATURE</span>
+          </div>
+          <div id="encounter-prompt-text" class="diagnostic-text">
+            Investigating your field sighting...
+          </div>
+
+          <div style="font-size: 0.76rem; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
+            🎙️ AI Naturalist Detective speaking...
+          </div>
+
+          <!-- Diagnostic Choices -->
+          <div id="encounter-choices" class="choices-list">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Voice Mic for Answering -->
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; margin-top: 8px;">
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 6px;">Or answer by speaking:</div>
+            <button type="button" id="encounter-mic-btn" class="mic-toggle-btn" style="width: auto; margin: 0 auto; padding: 6px 14px;" title="Speak answer">
+              <span>🎙️ Speak Response</span>
+            </button>
+            <div id="encounter-mic-status" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Tap to speak</div>
+          </div>
+        </div>
+
+        <!-- Phase B: Gotcha Catch Reveal Screen -->
+        <div id="encounter-caught" style="display: none;">
+          <div class="gotcha-box">
+            <div class="gotcha-title">🎉 GOTCHA! WILD SPECIES REGISTERED!</div>
+            <div class="xp-pill-green">+50 Nature XP Earned</div>
+          </div>
+
+          <div class="revealed-card">
+            <img id="caught-img" class="revealed-img" src="" alt="Species">
+            <div class="revealed-body">
+              <span id="caught-rarity" class="badge">Everyday</span>
+              <div id="caught-common-name" class="revealed-title">Common Name</div>
+              <div id="caught-tamil-name" class="revealed-tamil">தமிழ் பெயர்</div>
+              <div id="caught-sci-name" class="revealed-sci">Scientific Name</div>
+              <div id="caught-fact" class="revealed-fact">Local grounded fact...</div>
+            </div>
+          </div>
+
+          <div class="outdoor-note" style="margin-bottom: 12px; font-weight: 600;">
+            🌿 Now put your phone away and touch grass! Observe this bird for 30 seconds.
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="caught-view-journal-btn" class="start-btn" style="flex: 1;">
+              Open Journal 🎒
+            </button>
+            <button type="button" id="caught-next-btn" class="secondary-btn" style="flex: 1; margin: 0;">
+              + Spot Another
+            </button>
+          </div>
+        </div>
+
+        <button type="button" id="cancel-encounter-btn" class="secondary-btn" style="margin-top: 12px;">
+          ← Back to Home
+        </button>
+      </div>
+    </main>
+
+    <!-- 2. Step-by-Step Question View -->
     <main id="question-view" class="view-screen">
-      <div class="step-indicator">
+      <div class="step-header">
         <span id="step-counter">Question 1 of 5</span>
-        <span>Tap to select</span>
+        <span>Tap to choose</span>
       </div>
-      <div class="progress-bar-container">
-        <div id="progress-fill" class="progress-bar-fill"></div>
-      </div>
-
-      <!-- Category Safety Notice (Trees) -->
-      <div id="safety-banner" class="safety-banner" style="display: none;">
-        <span>⚠️</span>
-        <span id="safety-text">Never taste leaves, fruit or seeds to identify them.</span>
+      <div class="progress-track">
+        <div id="progress-fill" class="progress-fill"></div>
       </div>
 
-      <!-- Grounded Observation Prompt -->
-      <div class="question-prompt-box">
-        <h2 id="question-prompt" class="question-prompt">What do you observe?</h2>
-        <div id="question-prompt-sub" class="question-prompt-ta">கவனியுங்கள்</div>
+      <div class="hero-card" style="margin-bottom: 12px;">
+        <div id="question-prompt" class="q-prompt">What do you observe?</div>
+        <div id="question-prompt-sub" class="q-sub">கவனியுங்கள்</div>
       </div>
 
-      <!-- Options container (populated from categories.json) -->
-      <div id="options-container"></div>
+      <div id="options-container" class="option-list"></div>
 
-      <!-- Optional Sound / Free text input -->
-      <div id="free-text-section" class="free-text-box" style="display: none;">
-        <label id="free-text-title" class="free-text-label">Describe any sound or call:</label>
-        <input type="text" id="free-text-input" class="free-text-input" autocomplete="off" />
-      </div>
-
-      <!-- Action Footer -->
-      <div class="question-nav-bar">
+      <div class="nav-row">
         <button type="button" id="skip-btn" class="skip-btn">Skip Question</button>
         <button type="button" id="next-btn" class="next-btn">Next →</button>
       </div>
@@ -230,109 +254,95 @@
 
     <!-- 3. Summary View -->
     <main id="summary-view" class="view-screen">
-      <div class="question-prompt-box">
-        <h2 class="question-prompt">Review Your Field Notes</h2>
-        <div class="question-prompt-ta">உங்கள் குறிப்புகளைச் சரிபார்க்கவும்</div>
+      <div class="hero-card" style="margin-bottom: 12px;">
+        <div class="q-prompt">Review Field Notes</div>
+        <div class="q-sub">குறிப்புகளைச் சரிபார்க்கவும்</div>
       </div>
 
-      <div class="summary-card">
-        <div id="summary-items" class="summary-list"></div>
-      </div>
+      <div id="summary-items" class="hero-card" style="margin-bottom: 12px;"></div>
 
-      <button type="button" id="submit-matches-btn" class="start-btn">
-        Find Candidate Matches
+      <button type="button" id="submit-matches-btn" class="start-btn" style="width: 100%;">
+        Find Candidate Species
       </button>
     </main>
 
     <!-- 4. Candidate Results View -->
     <main id="results-view" class="view-screen">
-      <div class="question-prompt-box">
-        <h2 class="question-prompt">Candidate Species</h2>
-        <div class="question-prompt-ta">பொருத்தமான வகைகள்</div>
+      <div class="hero-card" style="margin-bottom: 10px;">
+        <div class="q-prompt">Candidate Matches</div>
+        <div class="q-sub">பொருத்தமான வகைகள்</div>
       </div>
 
       <div id="candidates-container"></div>
 
-      <div class="outdoor-prompt-box">
-        <div class="outdoor-prompt-text">Now look up. Watch it for a minute.</div>
-        <div class="outdoor-prompt-sub">Notice how it moves before returning to your walk.</div>
-      </div>
-
-      <button type="button" id="new-observation-btn" class="skip-btn" style="margin-top: 16px; width: 100%;">
-        + Observe Another Species
+      <button type="button" id="new-observation-btn" class="secondary-btn" style="margin-top: 12px;">
+        + Observe Another
       </button>
     </main>
 
     <!-- 5. Field Journal (Deck) View -->
     <main id="journal-view" class="view-screen">
-      <div class="question-prompt-box">
-        <h2 class="question-prompt" id="journal-title">My Field Journal</h2>
-        <div class="question-prompt-ta" id="journal-sub">களக் குறிப்பேடு · உங்களின் இயற்கை அட்டைகள்</div>
+      <div class="hero-card" style="margin-bottom: 10px;">
+        <div class="q-prompt" id="journal-title">My Field Journal</div>
+        <div class="q-sub" id="journal-sub">களக் குறிப்பேடு · உங்களின் இயற்கை அட்டைகள்</div>
       </div>
 
-      <div class="journal-stats-banner">
-        <div class="journal-stat-item">
-          <div class="stat-number" id="journal-stat-total">0/80</div>
-          <div class="stat-label">Discovered</div>
+      <div class="journal-stats-grid">
+        <div class="journal-stat-card">
+          <div class="stat-num" id="journal-stat-total">0/80</div>
+          <div class="stat-lbl">Discovered</div>
         </div>
-        <div class="journal-stat-item">
-          <div class="stat-number" id="journal-stat-everyday">0/30</div>
-          <div class="stat-label">Everyday</div>
+        <div class="journal-stat-card">
+          <div class="stat-num" id="journal-stat-everyday">0/30</div>
+          <div class="stat-lbl">Everyday</div>
         </div>
-        <div class="journal-stat-item">
-          <div class="stat-number" id="journal-stat-special">0/15</div>
-          <div class="stat-label">Special Finds</div>
+        <div class="journal-stat-card">
+          <div class="stat-num" id="journal-stat-special">0/15</div>
+          <div class="stat-lbl">Special Finds</div>
         </div>
       </div>
 
-      <!-- Filter Tabs -->
-      <div class="journal-filters">
-        <button type="button" class="filter-btn active" data-filter="all">All (80)</button>
-        <button type="button" class="filter-btn" data-filter="unlocked">Discovered ✨</button>
-        <button type="button" class="filter-btn" data-filter="locked">Yet to Find 🔍</button>
+      <div class="filter-tabs">
+        <button type="button" class="tab-filter-btn active" data-filter="all">All (80)</button>
+        <button type="button" class="tab-filter-btn" data-filter="unlocked">Discovered ✨</button>
+        <button type="button" class="tab-filter-btn" data-filter="locked">Yet to Find 🔍</button>
       </div>
 
-      <div id="journal-cards-grid" class="journal-cards-grid">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="journal-cards-grid" class="journal-grid"></div>
 
-      <button type="button" id="back-from-journal-btn" class="secondary-btn" style="margin-top: 20px;">
+      <button type="button" id="back-from-journal-btn" class="secondary-btn" style="margin-top: 14px;">
         ← Back to Observation
       </button>
     </main>
   </div>
 
-  <!-- 6. Card Unlock Celebration Modal -->
-  <div id="unlock-modal" class="unlock-modal-backdrop" style="display: none;">
-    <div class="unlock-modal-content">
-      <div class="unlock-badge-header">
-        ✨ NEW SPECIES DISCOVERED! ✨
+  <!-- Card Unlock Modal -->
+  <div id="unlock-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div style="font-size: 0.76rem; font-weight: 800; color: var(--accent); margin-bottom: 8px;">
+        ✨ SPECIES REGISTERED! ✨
       </div>
-      <div id="unlock-card-frame" class="unlock-card-frame">
-        <img id="unlock-img" class="unlock-card-img" src="" alt="Species">
-        <div class="unlock-card-body">
+      <div class="revealed-card">
+        <img id="unlock-img" class="revealed-img" src="" alt="Species">
+        <div class="revealed-body">
           <span id="unlock-rarity" class="badge">Everyday</span>
-          <h2 id="unlock-common-name" class="unlock-name">Common Name</h2>
-          <div id="unlock-tamil-name" class="unlock-tamil">தமிழ் பெயர்</div>
-          <div id="unlock-sci-name" class="unlock-sci">Scientific Name</div>
-          <p id="unlock-fact" class="unlock-fact">Local grounded fact...</p>
+          <div id="unlock-common-name" class="revealed-title">Common Name</div>
+          <div id="unlock-tamil-name" class="revealed-tamil">தமிழ் பெயர்</div>
+          <div id="unlock-sci-name" class="revealed-sci">Scientific Name</div>
+          <div id="unlock-fact" class="revealed-fact">Local fact...</div>
         </div>
       </div>
-      <div class="outdoor-prompt-box" style="margin: 12px 0;">
-        <div class="outdoor-prompt-text">Now look up. Watch it for a minute.</div>
-        <div class="outdoor-prompt-sub">Put your phone away and take in the moment.</div>
-      </div>
-      <div style="display: flex; gap: 8px; margin-top: 14px;">
-        <button type="button" id="modal-view-journal-btn" class="start-btn" style="flex: 1; padding: 12px;">
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="modal-view-journal-btn" class="start-btn" style="flex: 1;">
           Open Journal 🎒
         </button>
-        <button type="button" id="modal-close-btn" class="secondary-btn" style="flex: 1; padding: 12px;">
+        <button type="button" id="modal-close-btn" class="secondary-btn" style="flex: 1; margin: 0;">
           Done ✓
         </button>
       </div>
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=9"></script>
+  <script src="/static/js/app.js?v=10"></script>
 </body>
 </html>

@@ -56,6 +56,7 @@ def evaluate_encounter_turn(
                        ON CONFLICT(species_id) DO NOTHING""",
                     (target["id"], f"Spotted during wild field encounter: {user_input}")
                 )
+                conn.execute("UPDATE user_profile SET xp = xp + 50 WHERE id = 1")
                 conn.commit()
             finally:
                 conn.close()

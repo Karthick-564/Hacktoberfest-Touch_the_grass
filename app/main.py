@@ -157,6 +157,107 @@ async def encounter_turn_endpoint(payload: EncounterPayload):
     return result
 
 
+@app.get("/api/quests")
+async def get_daily_quests():
+    """
+    Returns user profile (XP, level, rank title, streak) and daily quests.
+    """
+    conn = get_connection()
+    try:
+        profile_row = conn.execute("SELECT * FROM user_profile WHERE id = 1").fetchone()
+        xp = profile_row["xp"] if profile_row else 0
+        streak = profile_row["streak_days"] if profile_row else 1
+
+        # Calculate Level & Rank
+        if xp < 100:
+            level = 1
+            rank_title = "Seedling Scout"
+            rank_title_ta = "தொடக்க சாரணர்"
+            xp_next = 100
+            xp_curr = xp
+        elif xp < 250:
+            level = 2
+            rank_title = "Field Tracker"
+            rank_title_ta = "களக் கண்டுபிடிப்பாளர்"
+            xp_next = 150
+            xp_curr = xp - 100
+        elif xp < 500:
+            level = 3
+            rank_title = "Bushcraft Ranger"
+            rank_title_ta = "காட்டுப் பாதுகாவலர்"
+            xp_next = 250
+            xp_curr = xp - 250
+        else:
+            level = 4
+            rank_title = "Master Naturalist"
+            rank_title_ta = "முதன்மை இயற்கை ஆய்வாளர்"
+            xp_next = 500
+            xp_curr = 500
+
+        # Check today's unlocks for quests
+        today_unlocks = conn.execute(
+            """SELECT s.common_name, s.key_traits, s.summary
+               FROM user_collection uc
+               JOIN species s ON uc.species_id = s.id
+               WHERE DATE(uc.unlocked_at) = CURRENT_DATE"""
+        ).fetchall()
+
+        has_touch_grass = len(today_unlocks) > 0
+        has_perched = any("wire" in (r["summary"] or "").lower() or "branch" in (r["summary"] or "").lower() for r in today_unlocks)
+        has_color = any("yellow" in (r["key_traits"] or "").lower() or "red" in (r["key_traits"] or "").lower() for r in today_unlocks)
+
+        quests = [
+            {
+                "id": "touch_grass",
+                "icon": "🌱",
+                "title": "Touch Grass Today",
+                "title_ta": "இன்று இயற்கையை உணருங்கள்",
+                "desc": "Step outside and log 1 wild sighting",
+                "desc_ta": "வெளியே சென்று 1 உயிரினத்தைக் கண்டறியவும்",
+                "completed": has_touch_grass,
+                "reward_xp": 50
+            },
+            {
+                "id": "perched_watcher",
+                "icon": "⚡",
+                "title": "Perched Watcher",
+                "title_ta": "கிளைக் கண்காணிப்பாளர்",
+                "desc": "Find a bird perched on a branch or wire",
+                "desc_ta": "கம்பியில் அல்லது கிளையில் அமர்ந்த பறவை",
+                "completed": has_perched,
+                "reward_xp": 50
+            },
+            {
+                "id": "color_hunter",
+                "icon": "🎨",
+                "title": "Vibrant Plumage",
+                "title_ta": "வண்ண இறகுகள்",
+                "desc": "Observe a bird with yellow or red accents",
+                "desc_ta": "மஞ்சள் அல்லது சிவப்பு அடையாளங்கள் கொண்ட பறவை",
+                "completed": has_color,
+                "reward_xp": 50
+            }
+        ]
+
+        pct = min(100, int((xp_curr / xp_next) * 100)) if xp_next > 0 else 100
+
+        return {
+            "profile": {
+                "level": level,
+                "rank_title": rank_title,
+                "rank_title_ta": rank_title_ta,
+                "total_xp": xp,
+                "xp_current_level": xp_curr,
+                "xp_next": xp_next,
+                "progress_pct": pct,
+                "streak_days": streak
+            },
+            "quests": quests
+        }
+    finally:
+        conn.close()
+
+
 from app.matcher import match_observation
 
 
