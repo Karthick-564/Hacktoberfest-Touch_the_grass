@@ -277,7 +277,7 @@ async def match_observation_endpoint(payload: ObservationPayload):
     try:
         species_rows = conn.execute(
             """SELECT id, scientific_name, common_name, tamil_name, rarity,
-                      summary, description_text, key_traits, local_fact, image_local_path
+                      summary, description_text, key_traits, local_fact, image_local_path, audio_url
                FROM species WHERE category = ? ORDER BY observation_count DESC""",
             (category,)
         ).fetchall()
@@ -395,7 +395,7 @@ async def get_user_collection(category: str = "birds"):
         rows = conn.execute(
             """SELECT s.id, s.scientific_name, s.common_name, s.tamil_name, s.rarity,
                       s.summary, s.description_text, s.key_traits, s.local_fact,
-                      s.image_local_path, s.peak_months,
+                      s.image_local_path, s.peak_months, s.audio_url,
                       CASE WHEN uc.id IS NOT NULL THEN 1 ELSE 0 END as is_unlocked,
                       uc.unlocked_at, uc.notes as user_notes
                FROM species s

@@ -155,7 +155,7 @@
           <span>🐦 Birds (80)</span>
         </button>
         <button type="button" class="category-tab-btn" data-cat="trees">
-          <span>🌳 Trees & Flora</span>
+          <span>🌳 Trees (25)</span>
         </button>
       </div>
 
@@ -218,6 +218,8 @@
 
     <!-- Hidden audio element for ElevenLabs narrator -->
     <audio id="narrator-audio" preload="auto"></audio>
+    <!-- Audio element for genuine bird calls -->
+    <audio id="bird-call-audio" preload="none"></audio>
 
     <!-- 1B. Pokemon Go Wild Encounter View -->
     <main id="encounter-view" class="view-screen">
@@ -269,6 +271,12 @@
               <div id="caught-sci-name" class="revealed-sci">Scientific Name</div>
               <div id="caught-fact" class="revealed-fact">Local grounded fact...</div>
             </div>
+          </div>
+
+          <div id="caught-audio-container" style="display: none; margin: 12px 0 8px;">
+            <button type="button" id="caught-bird-call-btn" class="bird-call-btn">
+              🎵 Hear Bird Call / Song
+            </button>
           </div>
 
           <div class="outdoor-note" style="margin-bottom: 12px; font-weight: 600;">
@@ -394,6 +402,11 @@
           <div id="unlock-fact" class="revealed-fact">Local fact...</div>
         </div>
       </div>
+      <div id="modal-audio-container" style="display: none; margin: 12px 0 8px;">
+        <button type="button" id="modal-bird-call-btn" class="bird-call-btn">
+          🎵 Hear Bird Call / Song
+        </button>
+      </div>
       <div style="display: flex; gap: 8px;">
         <button type="button" id="modal-view-journal-btn" class="start-btn" style="flex: 1;">
           Open Journal 📖
@@ -405,6 +418,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=12"></script>
+  <script src="/static/js/app.js?v=13"></script>
 </body>
 </html>

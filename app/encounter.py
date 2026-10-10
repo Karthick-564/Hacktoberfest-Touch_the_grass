@@ -30,7 +30,7 @@ def evaluate_encounter_turn(
     try:
         rows = conn.execute(
             """SELECT id, scientific_name, common_name, tamil_name, rarity,
-                      summary, description_text, key_traits, local_fact, image_local_path
+                      summary, description_text, key_traits, local_fact, image_local_path, audio_url
                FROM species WHERE category = ? ORDER BY observation_count DESC""",
             (category,)
         ).fetchall()
@@ -115,8 +115,42 @@ def evaluate_encounter_turn(
     colors = traits.get("primary_colors", [])
     desc = top_cand.get("description_text", top_cand.get("summary", ""))
 
-    # Formulate a sharp diagnostic question that forces the user to LOOK UP at the real bird!
-    if "crest" in str(distinctive).lower() or "crest" in str(beak).lower():
+    # Formulate a sharp diagnostic question that forces the user to LOOK UP at the real organism!
+    if category == "trees":
+        leaf_shape = traits.get("leaf_shape", "")
+        leaf_arr = traits.get("leaf_arrangement", "")
+        bark = traits.get("bark", "")
+        smell = traits.get("crushed_smell", "")
+        flowers_fruit = traits.get("flowers_fruit", "")
+
+        if "heart" in str(leaf_shape).lower() or "drip tip" in desc.lower():
+            prompt = "Look closely at the leaf shape: Are the leaves heart-shaped with a long slender tail-like tip that flutters in the breeze?"
+            choices = ["Yes, heart-shaped with long tip!", "No, simple oval leaves", "Can't reach leaves"]
+        elif "aerial root" in desc.lower() or "prop root" in desc.lower():
+            prompt = "Look at the branches and trunk: Does the tree have hanging aerial roots reaching down toward the ground?"
+            choices = ["Yes, massive aerial roots visible!", "No hanging aerial roots", "Not sure"]
+        elif "feathery" in str(leaf_arr).lower() or "compound" in str(leaf_arr).lower():
+            prompt = "Look at the foliage: Are the leaves feathery and divided into rows of small opposite leaflets?"
+            choices = ["Yes, feathery divided leaflets!", "No, single simple broad leaves", "Can't see clearly"]
+        elif "medicinal" in str(smell).lower() or "bitter" in desc.lower():
+            prompt = "Crush a fallen leaf between your fingers: Does it have a strong, bitter medicinal fragrance?"
+            choices = ["Yes, strong bitter herbal scent!", "No distinct scent", "No leaves on ground"]
+        elif "yellow" in desc.lower() and ("flower" in desc.lower() or "shower" in top_cand.get("common_name", "").lower()):
+            prompt = "Look up into the crown: Does it have long hanging sprays of bright golden-yellow flowers or long dark cylindrical seed pods?"
+            choices = ["Yes, yellow flowers or long hanging pods!", "No yellow flowers", "Only green leaves"]
+        elif "flame" in top_cand.get("common_name", "").lower() or "scarlet" in desc.lower() or "gulmohar" in top_cand.get("common_name", "").lower():
+            prompt = "Look up at the canopy: Does it have bright fiery scarlet-orange flowers spreading like an umbrella?"
+            choices = ["Yes, vibrant scarlet-orange blooms!", "No red flowers", "Can't tell"]
+        elif "thorny" in desc.lower() or "spines" in desc.lower():
+            prompt = "Look along the smaller branches: Does the branch have sharp thorns or prickles?"
+            choices = ["Yes, sharp spines/thorns!", "No thorns, smooth branches", "Can't reach"]
+        elif "smooth" in str(bark).lower():
+            prompt = "Touch the trunk: Is the bark relatively smooth and pale grey/greenish?"
+            choices = ["Yes, smooth pale bark!", "No, deeply rough and furrowed", "Can't touch trunk"]
+        else:
+            prompt = "Look at the overall crown: Is it a massive spreading shade tree, a slender avenue tree, or a scrubby wild tree?"
+            choices = ["Massive wide spreading canopy", "Slender avenue or roadside tree", "Scrubby shrub-like tree"]
+    elif "crest" in str(distinctive).lower() or "crest" in str(beak).lower():
         prompt = "Look up at its head right now: Does it have a spiky crest (like a little crown) on top of its head?"
         choices = ["Yes, spiky crest visible!", "No, smooth flat head", "Head is hidden"]
     elif "forked" in str(distinctive).lower() or "forked" in desc.lower() or "tail" in str(distinctive).lower():

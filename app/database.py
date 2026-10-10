@@ -42,6 +42,7 @@ def init_db(db_path: Optional[Path] = None):
             local_fact TEXT NOT NULL,                    -- Grounded locality observation context
             image_url TEXT,                              -- Original remote image URL
             image_local_path TEXT,                       -- Local offline path (e.g. /static/images/...)
+            audio_url TEXT,                              -- Direct bird call recording URL (Wikimedia Commons / xeno-canto)
             FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE CASCADE,
             UNIQUE(region_id, scientific_name)
         );

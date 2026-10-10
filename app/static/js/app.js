@@ -448,6 +448,19 @@ async function sendEncounterTurn(userInput) {
       if (sci) sci.textContent = sp.scientific_name;
       if (fact) fact.textContent = sp.local_fact || sp.summary || "";
 
+      // Real Bird Call Audio playback on Catch Screen
+      const caughtAudioContainer = document.getElementById("caught-audio-container");
+      const caughtBirdCallBtn = document.getElementById("caught-bird-call-btn");
+      if (sp.audio_url && currentCategory === "birds") {
+        if (caughtAudioContainer) caughtAudioContainer.style.display = "block";
+        if (caughtBirdCallBtn) {
+          caughtBirdCallBtn.innerHTML = "🎵 Hear Bird Call / Song";
+          caughtBirdCallBtn.onclick = () => window.playBirdCall(sp.audio_url, caughtBirdCallBtn);
+        }
+      } else {
+        if (caughtAudioContainer) caughtAudioContainer.style.display = "none";
+      }
+
       if (data.audio_url && narratorAudio) {
         narratorAudio.src = data.audio_url;
         narratorAudio.play().catch(() => {});
@@ -460,6 +473,49 @@ async function sendEncounterTurn(userInput) {
     console.error("Encounter turn error:", err);
   }
 }
+
+// Global Bird Call Audio Player
+let currentBirdAudioUrl = null;
+window.playBirdCall = function(audioUrl, btnElement) {
+  if (!audioUrl) return;
+  const audioEl = document.getElementById("bird-call-audio");
+  if (!audioEl) return;
+
+  if (currentBirdAudioUrl === audioUrl && !audioEl.paused) {
+    audioEl.pause();
+    if (btnElement) {
+      btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
+        ? "🎵 Hear Bird Call / Song"
+        : "🎵 Hear Call";
+    }
+    return;
+  }
+
+  // Reset all other audio buttons to play state
+  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "🎵 Hear Bird Call / Song");
+  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "🎵 Hear Call");
+
+  audioEl.src = audioUrl;
+  audioEl.play().then(() => {
+    currentBirdAudioUrl = audioUrl;
+    if (btnElement) {
+      btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
+        ? "⏸️ Pause Bird Call"
+        : "⏸️ Pause Call";
+    }
+  }).catch((err) => {
+    console.log("Audio playback error:", err);
+  });
+
+  audioEl.onended = () => {
+    currentBirdAudioUrl = null;
+    if (btnElement) {
+      btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
+        ? "🎵 Hear Bird Call / Song"
+        : "🎵 Hear Call";
+    }
+  };
+};
 
 
 // Load Collection Stats for Selected Category
@@ -822,6 +878,13 @@ function renderResultsScreen(data) {
     const tamilText = cand.tamil_name ? `<div class="candidate-tamil">${cand.tamil_name}</div>` : "";
     const imgSrc = cand.image_local_path || "/static/images/fallback.jpg";
 
+    const audioButtonHtml = cand.audio_url ? `
+      <div style="margin-top: 6px;">
+        <button type="button" class="card-audio-btn" onclick="window.playBirdCall('${cand.audio_url}', this); event.stopPropagation();">
+          🎵 Hear Call
+        </button>
+      </div>` : "";
+
     card.innerHTML = `
       <div class="candidate-header">
         <img class="candidate-img" src="${imgSrc}" alt="${cand.common_name}" onerror="this.style.display='none'">
@@ -830,6 +893,7 @@ function renderResultsScreen(data) {
           <div class="candidate-title">${cand.common_name}</div>
           ${tamilText}
           <div class="candidate-sci">${cand.scientific_name}</div>
+          ${audioButtonHtml}
         </div>
       </div>
       <div class="confirm-box">
@@ -872,6 +936,19 @@ window.unlockSpecies = async function(speciesId) {
       if (tamil) tamil.textContent = sp.tamil_name || "";
       if (sci) sci.textContent = sp.scientific_name;
       if (fact) fact.textContent = sp.local_fact || sp.summary || "";
+
+      // Modal bird call button
+      const modalAudioContainer = document.getElementById("modal-audio-container");
+      const modalBirdCallBtn = document.getElementById("modal-bird-call-btn");
+      if (sp.audio_url && currentCategory === "birds") {
+        if (modalAudioContainer) modalAudioContainer.style.display = "block";
+        if (modalBirdCallBtn) {
+          modalBirdCallBtn.innerHTML = "🎵 Hear Bird Call / Song";
+          modalBirdCallBtn.onclick = () => window.playBirdCall(sp.audio_url, modalBirdCallBtn);
+        }
+      } else {
+        if (modalAudioContainer) modalAudioContainer.style.display = "none";
+      }
 
       // Play ElevenLabs celebration audio
       if (data.audio_url && narratorAudio) {
@@ -964,6 +1041,13 @@ function renderDeckCards(filter) {
           ${tamil}
           <div class="journal-card-sci">${sp.scientific_name}</div>
           <div class="journal-card-fact">${sp.local_fact || (sp.summary ? sp.summary.slice(0, 90) + '...' : '')}</div>
+          ${sp.audio_url ? `
+            <div style="margin-top: 8px;">
+              <button type="button" class="card-audio-btn" onclick="window.playBirdCall('${sp.audio_url}', this); event.stopPropagation();">
+                🎵 Hear Call
+              </button>
+            </div>
+          ` : ''}
         </div>
       `;
     } else {
