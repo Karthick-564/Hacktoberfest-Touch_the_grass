@@ -299,6 +299,55 @@ function setupEventListeners() {
       }
     });
   }
+
+  // Left Sidebar Drawer Event Listeners
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  const sidebarOpenBtn = document.getElementById("sidebar-open-btn");
+  const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+  const sidebarJournalLink = document.getElementById("sidebar-journal-link");
+  const sidebarSteptapLink = document.getElementById("sidebar-steptap-link");
+
+  function openSidebar() {
+    if (sidebarOverlay) {
+      sidebarOverlay.classList.add("open");
+      sidebarOverlay.setAttribute("aria-hidden", "false");
+      loadQuests();
+    }
+  }
+
+  function closeSidebar() {
+    if (sidebarOverlay) {
+      sidebarOverlay.classList.remove("open");
+      sidebarOverlay.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  if (sidebarOpenBtn) sidebarOpenBtn.addEventListener("click", openSidebar);
+  if (sidebarCloseBtn) sidebarCloseBtn.addEventListener("click", closeSidebar);
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", (e) => {
+      if (e.target === sidebarOverlay) closeSidebar();
+    });
+  }
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebarOverlay && sidebarOverlay.classList.contains("open")) {
+      closeSidebar();
+    }
+  });
+
+  if (sidebarJournalLink) {
+    sidebarJournalLink.addEventListener("click", () => {
+      closeSidebar();
+      openJournal("all");
+    });
+  }
+
+  if (sidebarSteptapLink) {
+    sidebarSteptapLink.addEventListener("click", () => {
+      closeSidebar();
+      startObservation();
+    });
+  }
 }
 
 // Start Pokemon Go Encounter Mode
@@ -959,6 +1008,11 @@ function resetToHome() {
 }
 
 function showView(viewId) {
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  if (sidebarOverlay && sidebarOverlay.classList.contains("open")) {
+    sidebarOverlay.classList.remove("open");
+    sidebarOverlay.setAttribute("aria-hidden", "true");
+  }
   [homeView, questionView, summaryView, resultsView, journalView, encounterView].forEach((v) => v && v.classList.remove("active"));
   const target = document.getElementById(viewId);
   if (target) target.classList.add("active");

@@ -13,17 +13,126 @@
       });
     }
   </script>
-  <link rel="stylesheet" href="/static/css/style.css?v=10">
+  <link rel="stylesheet" href="/static/css/style.css?v=11">
 </head>
 <body>
+  <!-- Left Sidebar Drawer (Tasks & Explorer Hub) -->
+  <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true">
+    <aside id="sidebar-drawer" class="sidebar-drawer" role="dialog" aria-modal="true" aria-label="Tasks and Explorer Hub">
+      <!-- Top Header with Close Button -->
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-icon">🎒</span>
+          <div>
+            <div class="sidebar-brand-title">Tasks & Missions</div>
+            <div class="sidebar-brand-sub">Coimbatore Field Guide</div>
+          </div>
+        </div>
+        <button type="button" id="sidebar-close-btn" class="sidebar-close-btn" title="Close tasks sidebar" aria-label="Close sidebar">✕</button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- 1. Tasks / Missions Section -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="section-title">🎯 TODAY'S FIELD TASKS</span>
+            <span class="section-badge" id="tasks-counter">Coimbatore</span>
+          </div>
+          <div id="quests-list" class="quests-list">
+            <div class="quest-item" id="quest-touch-grass">
+              <div class="quest-left">
+                <span style="font-size: 1.1rem;">🌱</span>
+                <div>
+                  <div class="quest-title">Touch Grass Today</div>
+                  <div class="quest-desc">Step outside & log 1 wild sighting</div>
+                </div>
+              </div>
+              <span class="quest-reward">+50 XP</span>
+            </div>
+            <div class="quest-item" id="quest-perched">
+              <div class="quest-left">
+                <span style="font-size: 1.1rem;">⚡</span>
+                <div>
+                  <div class="quest-title">Perched Watcher</div>
+                  <div class="quest-desc">Find a bird sitting on branch or wire</div>
+                </div>
+              </div>
+              <span class="quest-reward">+50 XP</span>
+            </div>
+            <div class="quest-item" id="quest-color">
+              <div class="quest-left">
+                <span style="font-size: 1.1rem;">🎨</span>
+                <div>
+                  <div class="quest-title">Vibrant Plumage</div>
+                  <div class="quest-desc">Spot a creature with yellow or red marks</div>
+                </div>
+              </div>
+              <span class="quest-reward">+50 XP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Explorer Level & XP Progress Section -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="section-title">⭐ EXPLORER PROGRESS</span>
+            <div class="streak-tag" id="streak-tag">🔥 1 Day Streak</div>
+          </div>
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="rank-badge">
+                <span id="rank-icon">🌱</span>
+                <span id="rank-title">Level 1 · Seedling Scout</span>
+              </div>
+            </div>
+            <div class="xp-bar-bg">
+              <div id="xp-bar-fill" class="xp-bar-fill" style="width: 0%;"></div>
+            </div>
+            <div class="xp-labels">
+              <span id="xp-current-label">0 XP</span>
+              <span id="xp-next-label">Next Level: 100 XP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Quick Field Navigation -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="section-title">🧭 FIELD EXPLORER</span>
+          </div>
+          <div class="sidebar-nav-list">
+            <button type="button" class="sidebar-nav-btn" id="sidebar-journal-link">
+              <span>🎒 View Field Journal (80 Species)</span>
+              <span class="nav-arrow">→</span>
+            </button>
+            <button type="button" class="sidebar-nav-btn" id="sidebar-steptap-link">
+              <span>👁️ 5-Question Step Identifier</span>
+              <span class="nav-arrow">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <span>🌿 Hacktoberfest Touch Grass · Offline Ready</span>
+      </div>
+    </aside>
+  </div>
+
   <div id="app-container">
     <!-- Top Header -->
     <header class="app-header">
-      <div class="logo-area" id="home-link" title="Home">
-        <span style="font-size: 1.3rem;">🌿</span>
-        <span class="app-title">Field Guide</span>
+      <div class="header-left">
+        <button type="button" id="sidebar-open-btn" class="sidebar-open-btn" title="Open tasks sidebar" aria-label="Open tasks">
+          <span class="hamburger-icon">☰</span>
+          <span class="tasks-pill-badge">Tasks</span>
+        </button>
+        <div class="logo-area" id="home-link" title="Home">
+          <span class="logo-emoji">🌿</span>
+          <span class="app-title">Field Guide</span>
+        </div>
       </div>
-      <div style="display: flex; gap: 6px; align-items: center;">
+      <div class="header-right">
         <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Open Field Journal">
           🎒 <span id="journal-btn-count">0/80</span>
         </button>
@@ -31,91 +140,41 @@
       </div>
     </header>
 
-    <!-- 1. Home View -->
+    <!-- 1. Clean, User-Friendly Home View (No Stacked Box Clutter) -->
     <main id="home-view" class="view-screen active">
-      <!-- Explorer Rank & Level Card (Option A) -->
-      <div class="profile-card">
-        <div class="profile-header">
-          <div class="rank-badge">
-            <span id="rank-icon">🌱</span>
-            <span id="rank-title">Level 1 · Seedling Scout</span>
-          </div>
-          <div class="streak-tag" id="streak-tag">🔥 1 Day Streak</div>
-        </div>
-        <div class="xp-bar-bg">
-          <div id="xp-bar-fill" class="xp-bar-fill" style="width: 0%;"></div>
-        </div>
-        <div class="xp-labels">
-          <span id="xp-current-label">0 XP</span>
-          <span id="xp-next-label">Next Level: 100 XP</span>
-        </div>
+      <!-- Friendly Greeting Banner (Airy, clean typography) -->
+      <div class="home-greeting">
+        <div class="greeting-badge"><span>🌾</span> <span>TOUCH GRASS · COIMBATORE</span></div>
+        <h1 class="greeting-title">Spot a creature outside?</h1>
+        <p class="greeting-sub">Speak or type what you see. We'll identify it together.</p>
       </div>
 
-      <!-- Today's Daily Field Quests (Option A) -->
-      <div class="quests-card">
-        <div class="quests-header">
-          <span id="quests-title">🎯 TODAY'S FIELD MISSIONS</span>
-          <span style="font-size: 0.72rem; color: var(--accent); font-weight: 700;">Coimbatore</span>
-        </div>
-        <div id="quests-list" class="quests-list">
-          <div class="quest-item" id="quest-touch-grass">
-            <div class="quest-left">
-              <span style="font-size: 1.1rem;">🌱</span>
-              <div>
-                <div class="quest-title">Touch Grass Today</div>
-                <div class="quest-desc">Step outside & log 1 wild sighting</div>
-              </div>
-            </div>
-            <span class="quest-reward">+50 XP</span>
-          </div>
-          <div class="quest-item" id="quest-perched">
-            <div class="quest-left">
-              <span style="font-size: 1.1rem;">⚡</span>
-              <div>
-                <div class="quest-title">Perched Watcher</div>
-                <div class="quest-desc">Find a bird sitting on branch or wire</div>
-              </div>
-            </div>
-            <span class="quest-reward">+50 XP</span>
-          </div>
-          <div class="quest-item" id="quest-color">
-            <div class="quest-left">
-              <span style="font-size: 1.1rem;">🎨</span>
-              <div>
-                <div class="quest-title">Vibrant Plumage</div>
-                <div class="quest-desc">Spot a creature with yellow or red marks</div>
-              </div>
-            </div>
-            <span class="quest-reward">+50 XP</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category Selector Tabs -->
+      <!-- Category Pill Switcher -->
       <div class="category-tabs" id="category-tabs">
         <button type="button" class="category-tab-btn selected" data-cat="birds">
-          <span>🐦</span> <span>Birds (80)</span>
+          <span>🐦 Birds (80)</span>
         </button>
         <button type="button" class="category-tab-btn" data-cat="trees">
-          <span>🌳</span> <span>Trees & Flora</span>
+          <span>🌳 Trees & Flora</span>
         </button>
       </div>
 
-      <!-- Wild Encounter Detective Card -->
-      <div class="encounter-card">
-        <div class="encounter-card-header">
-          <span class="encounter-badge">⚡ WILD ENCOUNTER</span>
+      <!-- Single Elegant Encounter Surface -->
+      <div class="encounter-surface">
+        <div class="encounter-surface-header">
+          <span class="encounter-badge">⚡ AI NATURE DETECTIVE</span>
           <span class="encounter-sub-badge" id="stats-display">80 Coimbatore Species</span>
         </div>
-        <p class="encounter-instruction">Describe what you see. The AI will challenge your eyes:</p>
 
-        <textarea id="spoken-input" class="free-text-input" rows="2" placeholder="e.g. A black bird with a crest on its head and red under tail..."></textarea>
-
-        <!-- Live Audio Volume Line -->
-        <div id="volume-meter-box" class="volume-meter">
-          <div id="volume-fill" class="volume-meter-fill"></div>
+        <div class="input-wrap">
+          <textarea id="spoken-input" class="free-text-input" rows="2" placeholder="e.g. A black bird with a crest on its head and red under the tail..."></textarea>
+          
+          <!-- Live Audio Volume Line -->
+          <div id="volume-meter-box" class="volume-meter">
+            <div id="volume-fill" class="volume-meter-fill"></div>
+          </div>
+          <div id="mic-status" class="mic-status-text">🎙️ Tap Speak or type your sighting</div>
         </div>
-        <div id="mic-status" class="mic-status-text">Tap mic or pick an example below</div>
 
         <!-- Balanced Actions Row -->
         <div class="actions-row">
@@ -124,30 +183,33 @@
             <span id="mic-btn-label">Speak</span>
           </button>
           <button type="button" id="voice-match-btn" class="start-btn">
-            <span>⚡ Launch Encounter →</span>
+            <span>⚡ Identify Creature →</span>
           </button>
         </div>
 
         <!-- Sample Observation Chips -->
-        <div class="presets-label">Try an example sighting:</div>
-        <div class="presets-wrap">
-          <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
-            🐦 Crest & red vent
-          </button>
-          <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
-            🐤 Yellow bill & eye patch
-          </button>
-          <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
-            🦅 Forked tail on wire
-          </button>
+        <div class="presets-section">
+          <div class="presets-label">Try an example sighting:</div>
+          <div class="presets-wrap">
+            <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
+              🐦 Crest & red vent
+            </button>
+            <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
+              🐤 Yellow bill & eye patch
+            </button>
+            <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
+              🦅 Forked tail on wire
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Step-by-Step Taps Alternative Button -->
-      <button type="button" id="start-observation-btn" class="secondary-btn">
-        <span>👁️ Or Identify via 5 Step-by-Step Taps</span>
-        <span>→</span>
-      </button>
+      <!-- Subtle Step-by-Step Taps Alternative Link -->
+      <div class="alt-link-row">
+        <button type="button" id="start-observation-btn" class="text-link-btn">
+          <span>👁️ Prefer 5 step-by-step diagnostic questions? Tap here →</span>
+        </button>
+      </div>
 
       <div class="outdoor-note">
         🌱 Keep screen time short. Look up at real nature.
@@ -343,6 +405,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=10"></script>
+  <script src="/static/js/app.js?v=11"></script>
 </body>
 </html>
