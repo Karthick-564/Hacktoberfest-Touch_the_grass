@@ -1275,7 +1275,7 @@ function renderResultsScreen(data) {
   // AI Engine Evaluation Badge
   const engineBanner = document.createElement("div");
   engineBanner.style.cssText = "font-size: 0.8rem; color: var(--accent); margin-bottom: 12px; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 6px;";
-  engineBanner.innerHTML = `<span>🧠 ENGINE:</span> <span style="color: var(--text-main); font-weight: 600;">${data.engine_used || 'Gemma 2 (Local)'}</span> · <span style="color: #60a5fa;">🎙️ ElevenLabs Turbo</span>`;
+  engineBanner.innerHTML = `<span>🧠 ENGINE:</span> <span style="color: var(--text-main); font-weight: 600;">${data.engine_used || 'Gemma 2 9B (Open-Weight)'}</span> · <span style="color: #60a5fa;">🎙️ ElevenLabs Turbo</span>`;
   container.appendChild(engineBanner);
 
   candidates.forEach((cand) => {

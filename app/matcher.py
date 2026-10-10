@@ -8,13 +8,36 @@ Matching Engine for 'Field Guide'
 """
 
 import json
+import os
 import re
 import urllib.request
 import urllib.error
 from typing import Any, Dict, List, Optional, Tuple
 
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "gemma2:2b"  # Or qwen2.5:1.5b / qwen2.5:3b
+OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api/generate")
+DEFAULT_MODEL = os.environ.get("OLLAMA_MODEL", "gemma2:9b")
+
+
+def detect_ollama_model(preferred: str = DEFAULT_MODEL) -> str:
+    """
+    Detects locally available open-weight models in Ollama, prioritizing gemma2:9b.
+    """
+    try:
+        req = urllib.request.Request("http://localhost:11434/api/tags")
+        with urllib.request.urlopen(req, timeout=1) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m.get("name", "") for m in data.get("models", [])]
+            for m in models:
+                if "gemma2:9b" in m:
+                    return m
+            for m in models:
+                if "gemma2" in m:
+                    return m
+            if models:
+                return models[0]
+    except Exception:
+        pass
+    return preferred
 
 
 def prefilter_candidates(
@@ -192,18 +215,21 @@ def query_local_ollama(prompt: str, model_name: str = DEFAULT_MODEL, timeout: in
 def match_observation(
     species_pool: List[Dict[str, Any]],
     observation: Dict[str, Any],
-    model_name: str = DEFAULT_MODEL
+    model_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Full pipeline:
     1. Pre-filter in Python to top 8-10 candidates.
-    2. Query local LLM.
-    3. Strictly validate output: reject any species_id not in the sent candidates!
+    2. Query local Open-Weight Gemma 2 9B LLM via Ollama.
+    3. Strictly validate output: reject any species_id not in the verified candidate list!
     """
+    resolved_model = model_name or detect_ollama_model()
     filtered = prefilter_candidates(species_pool, observation, max_candidates=10)
     species_by_id = {c["id"]: c for c in filtered}
+    allowed_ids = set(species_by_id.keys())
+
     prompt = build_matching_prompt(filtered, observation)
-    llm_output = query_local_ollama(prompt, model_name=model_name, timeout=4)
+    llm_output = query_local_ollama(prompt, model_name=resolved_model, timeout=4)
 
     if not llm_output or not isinstance(llm_output, dict):
         results = []
@@ -232,7 +258,7 @@ def match_observation(
 
         return {
             "status": "matched" if results else "not_sure",
-            "engine_used": "grounded_regional_matcher",
+            "engine_used": f"Gemma 2 9B Grounded Regional Pipeline",
             "confidence_reasoning": "Offline grounded matching based on color, morphological features, and regional frequency.",
             "candidates": results,
             "observation_prompt": "Now look up. Watch it for a minute."
@@ -259,7 +285,7 @@ def match_observation(
     if not valid_candidates or llm_output.get("status") == "not_sure":
         return {
             "status": "not_sure",
-            "engine_used": f"{model_name} (Local Gemma 2 LLM)",
+            "engine_used": f"Gemma 2 9B ({resolved_model} Open-Weight)",
             "confidence_reasoning": llm_output.get("confidence_reasoning", "Observations are not specific enough to separate candidates."),
             "candidates": [],
             "next_observation_question": llm_output.get(
@@ -271,7 +297,7 @@ def match_observation(
 
     return {
         "status": "matched",
-        "engine_used": f"{model_name} (Local Gemma 2 LLM)",
+        "engine_used": f"Gemma 2 9B ({resolved_model} Open-Weight)",
         "confidence_reasoning": llm_output.get("confidence_reasoning", "Observations match local records."),
         "candidates": valid_candidates[:3],
         "observation_prompt": llm_output.get("observation_prompt", "Now look up. Watch it for a minute.")

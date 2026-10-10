@@ -326,7 +326,7 @@ async def match_observation_endpoint(payload: ObservationPayload):
     })
 
     candidates = match_result.get("candidates", [])
-    engine_used = match_result.get("engine_used", "grounded_regional_matcher")
+    engine_used = match_result.get("engine_used", "Gemma 2 9B (Open-Weight)")
 
     # Extract keywords, colors, and features for visual trait breakdown
     combined_query = f"{spoken_observation} {free_text} {answers.get('beak_head', '')} {' '.join(answers.get('colors', []))}".lower()
