@@ -219,7 +219,7 @@ async def get_daily_quests():
             },
             {
                 "id": "perched_watcher",
-                "icon": "⚡",
+                "icon": "🔭",
                 "title": "Perched Watcher",
                 "title_ta": "கிளைக் கண்காணிப்பாளர்",
                 "desc": "Find a bird perched on a branch or wire",

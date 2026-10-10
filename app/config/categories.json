@@ -62,7 +62,7 @@
           "options": [
             { "id": "ground", "label_en": "On the ground or lawn", "label_ta": "தரை அல்லது புல்வெளியில்", "emoji": "🌱" },
             { "id": "tree", "label_en": "In a tree or bush canopy", "label_ta": "மரக்கிளையில் அல்லது புதரில்", "emoji": "🌳" },
-            { "id": "wire", "label_en": "On a wire, roof or post", "label_ta": "மின்கம்பி அல்லது கட்டடத்தில்", "emoji": "⚡" },
+            { "id": "wire", "label_en": "On a wire, roof or post", "label_ta": "மின்கம்பி அல்லது கட்டடத்தில்", "emoji": "🏙️" },
             { "id": "water", "label_en": "Near water, tank or wetland", "label_ta": "ஏரி, குளம் அல்லது நீர்நிலையில்", "emoji": "💧" },
             { "id": "sky", "label_en": "Soaring high in the sky", "label_ta": "வானில் உயரே பறக்கிறது", "emoji": "☁️" }
           ]
