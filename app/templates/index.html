@@ -189,8 +189,8 @@
 
         <!-- Sample Observation Chips -->
         <div class="presets-section">
-          <div class="presets-label">Try an example sighting:</div>
-          <div class="presets-wrap">
+          <div class="presets-label" id="presets-label">Try an example sighting:</div>
+          <div class="presets-wrap" id="presets-wrap">
             <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
               🐦 Crest & red vent
             </button>
@@ -207,7 +207,7 @@
       <!-- Subtle Step-by-Step Taps Alternative Link -->
       <div class="alt-link-row">
         <button type="button" id="start-observation-btn" class="text-link-btn">
-          <span>👁️ Prefer 5 step-by-step diagnostic questions? Tap here →</span>
+          <span id="step-tap-label">👁️ Prefer step-by-step diagnostic questions? Tap here →</span>
         </button>
       </div>
 
@@ -223,6 +223,10 @@
 
     <!-- 1B. Pokemon Go Wild Encounter View -->
     <main id="encounter-view" class="view-screen">
+      <button type="button" id="encounter-top-back-btn" class="view-back-btn">
+        ← Back to Home
+      </button>
+
       <div class="encounter-screen-card">
         <!-- Radar Icon -->
         <div class="encounter-radar-slim">📡</div>
@@ -230,7 +234,7 @@
         <!-- Phase A: Investigating (2-way Detective Dialogue) -->
         <div id="encounter-investigating">
           <div class="look-up-pill">
-            <span>👁️</span> <span>LOOK UP AT THE CREATURE</span>
+            <span id="encounter-look-up-icon">👁️</span> <span id="encounter-look-up-text">LOOK UP AT THE CREATURE</span>
           </div>
           <div id="encounter-prompt-text" class="diagnostic-text">
             Investigating your field sighting...
@@ -301,6 +305,10 @@
 
     <!-- 2. Step-by-Step Question View -->
     <main id="question-view" class="view-screen">
+      <button type="button" id="question-back-btn" class="view-back-btn">
+        ← Back
+      </button>
+
       <div class="step-header">
         <span id="step-counter">Question 1 of 5</span>
         <span>Tap to choose</span>
@@ -308,6 +316,8 @@
       <div class="progress-track">
         <div id="progress-fill" class="progress-fill"></div>
       </div>
+
+      <div id="safety-banner" class="safety-banner" style="display: none;"></div>
 
       <div class="hero-card" style="margin-bottom: 12px;">
         <div id="question-prompt" class="q-prompt">What do you observe?</div>
@@ -317,6 +327,7 @@
       <div id="options-container" class="option-list"></div>
 
       <div class="nav-row">
+        <button type="button" id="prev-btn" class="skip-btn" style="display: none;">← Prev</button>
         <button type="button" id="skip-btn" class="skip-btn">Skip Question</button>
         <button type="button" id="next-btn" class="next-btn">Next →</button>
       </div>
@@ -324,6 +335,10 @@
 
     <!-- 3. Summary View -->
     <main id="summary-view" class="view-screen">
+      <button type="button" id="summary-back-btn" class="view-back-btn">
+        ← Back to Questions
+      </button>
+
       <div class="hero-card" style="margin-bottom: 12px;">
         <div class="q-prompt">Review Field Notes</div>
         <div class="q-sub">குறிப்புகளைச் சரிபார்க்கவும்</div>
@@ -334,10 +349,17 @@
       <button type="button" id="submit-matches-btn" class="start-btn" style="width: 100%;">
         Find Candidate Species
       </button>
+      <button type="button" id="summary-home-btn" class="secondary-btn" style="margin-top: 10px;">
+        ← Cancel & Back to Home
+      </button>
     </main>
 
     <!-- 4. Candidate Results View -->
     <main id="results-view" class="view-screen">
+      <button type="button" id="results-back-btn" class="view-back-btn">
+        ← Back to Home
+      </button>
+
       <div class="hero-card" style="margin-bottom: 10px;">
         <div class="q-prompt">Candidate Matches</div>
         <div class="q-sub">பொருத்தமான வகைகள்</div>
@@ -352,6 +374,10 @@
 
     <!-- 5. Field Journal (Deck) View -->
     <main id="journal-view" class="view-screen">
+      <button type="button" id="journal-top-back-btn" class="view-back-btn">
+        ← Back to Observation
+      </button>
+
       <div class="hero-card" style="margin-bottom: 10px;">
         <div class="q-prompt" id="journal-title">My Field Journal</div>
         <div class="q-sub" id="journal-sub">களக் குறிப்பேடு · உங்களின் இயற்கை அட்டைகள்</div>
@@ -418,6 +444,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=13"></script>
+  <script src="/static/js/app.js?v=14"></script>
 </body>
 </html>

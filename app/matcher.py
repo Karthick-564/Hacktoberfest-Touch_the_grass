@@ -43,6 +43,10 @@ def prefilter_candidates(
         str(answers.get("leaf_shape", "")),
         str(answers.get("leaf_arrangement", "")),
         str(answers.get("bark", "")),
+        str(answers.get("flowers_fruit", "")),
+        str(answers.get("crushed_smell", "")),
+        str(answers.get("habitat", "")),
+        str(answers.get("height", "")),
         str(free_text or "")
     ]).lower()
 
@@ -61,18 +65,38 @@ def prefilter_candidates(
         elif not isinstance(traits, dict):
             traits = {}
 
-        # 1. Color overlap score
+        # 1. Color overlap score (for birds & colorful organisms)
         sp_colors = [c.lower() for c in traits.get("primary_colors", []) if c != "unknown"]
         matched_colors = set(obs_colors).intersection(set(sp_colors))
         score += len(matched_colors) * 3.0
 
-        # 2. Text keyword matches in Description and Traits
-        desc_text = (sp.get("description_text", "") + " " + sp.get("summary", "")).lower()
-        obs_words = set(re.findall(r'\b\w{4,}\b', obs_text))
-        matched_words = [w for w in obs_words if w in desc_text]
-        score += min(len(matched_words) * 0.5, 4.0)
+        # 2. Direct Tree & Botanical Trait Matching
+        if answers.get("leaf_shape") and answers.get("leaf_shape") == traits.get("leaf_shape"):
+            score += 3.5
+        if answers.get("leaf_arrangement") and answers.get("leaf_arrangement") == traits.get("leaf_arrangement"):
+            score += 3.0
+        if answers.get("bark") and answers.get("bark") == traits.get("bark"):
+            score += 2.5
+        if answers.get("crushed_smell") and answers.get("crushed_smell") == traits.get("crushed_smell"):
+            score += 2.5
+        if answers.get("flowers_fruit") and answers.get("flowers_fruit") == traits.get("flowers_fruit"):
+            score += 2.0
+        if answers.get("habitat") and answers.get("habitat") == traits.get("habitat"):
+            score += 1.5
 
-        # 3. Frequency boost based on rarity
+        # 3. Direct Bird Trait Matching
+        if answers.get("beak_head") and answers.get("beak_head") == traits.get("beak_or_head"):
+            score += 2.5
+        if answers.get("where_seen") and answers.get("where_seen") in str(traits.get("habitat", "")).lower():
+            score += 1.5
+
+        # 4. Text keyword matches in Description, Summary, and Tamil Name
+        desc_text = (sp.get("description_text", "") + " " + sp.get("summary", "") + " " + sp.get("common_name", "") + " " + sp.get("tamil_name", "")).lower()
+        obs_words = set(re.findall(r'\b\w{3,}\b', obs_text))
+        matched_words = [w for w in obs_words if w in desc_text]
+        score += min(len(matched_words) * 0.7, 5.0)
+
+        # 5. Frequency boost based on rarity
         rarity = sp.get("rarity")
         if rarity == "Everyday":
             score += 1.0

@@ -1289,3 +1289,45 @@ body::before {
   color: #ffffff;
 }
 
+/* Screen Back Buttons */
+.view-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: 12px;
+  align-self: flex-start;
+  transition: all 0.16s ease;
+  backdrop-filter: blur(8px);
+}
+
+.view-back-btn:hover {
+  background: #ffffff;
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateX(-2px);
+}
+
+/* Category Safety Warning Banner */
+.safety-banner {
+  background: rgba(254, 240, 138, 0.45);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #854d0e;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+

@@ -42,6 +42,7 @@ async function init() {
   }
 
   setupEventListeners();
+  updateCategoryUI();
   loadStats();
   loadQuests();
 }
@@ -228,10 +229,10 @@ function setupEventListeners() {
       currentCategory = cat;
       document.querySelectorAll("#category-tabs .category-tab-btn").forEach(b => b.classList.remove("selected"));
       target.classList.add("selected");
+      updateCategoryUI();
       loadStats();
     });
   });
-
 
   const voiceMatchBtn = document.getElementById("voice-match-btn");
   if (voiceMatchBtn) {
@@ -248,6 +249,47 @@ function setupEventListeners() {
   document.getElementById("start-observation-btn").addEventListener("click", startObservation);
   document.getElementById("skip-btn").addEventListener("click", skipQuestion);
   document.getElementById("next-btn").addEventListener("click", nextQuestion);
+
+  // Question View Back Buttons
+  const questionBackBtn = document.getElementById("question-back-btn");
+  if (questionBackBtn) {
+    questionBackBtn.addEventListener("click", () => {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderCurrentQuestion();
+      } else {
+        resetToHome();
+      }
+    });
+  }
+
+  const prevBtn = document.getElementById("prev-btn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderCurrentQuestion();
+      }
+    });
+  }
+
+  // Summary View Back Buttons
+  const summaryBackBtn = document.getElementById("summary-back-btn");
+  if (summaryBackBtn) {
+    summaryBackBtn.addEventListener("click", () => {
+      showView("question-view");
+      const catConfig = getCategoryConfig();
+      currentQuestionIndex = (catConfig?.questions?.length || 1) - 1;
+      renderCurrentQuestion();
+    });
+  }
+  const summaryHomeBtn = document.getElementById("summary-home-btn");
+  if (summaryHomeBtn) summaryHomeBtn.addEventListener("click", resetToHome);
+
+  // Results & Match Back Buttons
+  const resultsBackBtn = document.getElementById("results-back-btn");
+  if (resultsBackBtn) resultsBackBtn.addEventListener("click", resetToHome);
+
   document.getElementById("submit-matches-btn").addEventListener("click", submitObservation);
   document.getElementById("new-observation-btn").addEventListener("click", resetToHome);
   document.getElementById("home-link").addEventListener("click", resetToHome);
@@ -255,6 +297,9 @@ function setupEventListeners() {
   // Journal and Modal Event Listeners
   const journalNavBtn = document.getElementById("journal-nav-btn");
   if (journalNavBtn) journalNavBtn.addEventListener("click", () => openJournal("all"));
+
+  const journalTopBackBtn = document.getElementById("journal-top-back-btn");
+  if (journalTopBackBtn) journalTopBackBtn.addEventListener("click", resetToHome);
 
   const backFromJournalBtn = document.getElementById("back-from-journal-btn");
   if (backFromJournalBtn) backFromJournalBtn.addEventListener("click", resetToHome);
@@ -279,7 +324,10 @@ function setupEventListeners() {
     });
   });
 
-  // Encounter Mode Event Listeners
+  // Encounter Mode Back & Action Listeners
+  const encounterTopBackBtn = document.getElementById("encounter-top-back-btn");
+  if (encounterTopBackBtn) encounterTopBackBtn.addEventListener("click", resetToHome);
+
   const cancelEncounterBtn = document.getElementById("cancel-encounter-btn");
   if (cancelEncounterBtn) cancelEncounterBtn.addEventListener("click", resetToHome);
 
@@ -589,6 +637,94 @@ async function loadQuests() {
   }
 }
 
+// Update Home UI, Presets, and Placeholders based on Category
+function updateCategoryUI() {
+  const spokenInput = document.getElementById("spoken-input");
+  const presetsWrap = document.getElementById("presets-wrap");
+  const presetsLabel = document.getElementById("presets-label");
+  const voiceMatchBtn = document.getElementById("voice-match-btn");
+  const micStatus = document.getElementById("mic-status");
+  const stepTapLabel = document.getElementById("step-tap-label");
+  const encounterLookUpText = document.getElementById("encounter-look-up-text");
+  const encounterLookUpIcon = document.getElementById("encounter-look-up-icon");
+
+  if (currentCategory === "trees") {
+    if (spokenInput) {
+      spokenInput.placeholder = currentLang === "en"
+        ? "Describe a tree outdoors... e.g. A large sacred tree with fluttering heart-shaped leaves, slender drip tips, and smooth grey bark"
+        : "வெளியே உள்ள மரத்தை விவரிக்கவும்... எ.கா. அரச மரம், இதய வடிவ இலைகள், வழுவழுப்பான பட்டை";
+    }
+    if (presetsLabel) {
+      presetsLabel.textContent = currentLang === "en" ? "Try an example tree observation:" : "மரத்தின் உதாரணக் குறிப்பு:";
+    }
+    if (presetsWrap) {
+      presetsWrap.innerHTML = `
+        <button type="button" class="preset-chip" onclick="setPreset('A sacred peepal tree with fluttering heart-shaped leaves with long tail tips and pale grey bark')">
+          💚 Heart leaves & drip tip
+        </button>
+        <button type="button" class="preset-chip" onclick="setPreset('A roadside neem tree with feathery serrated compound leaves and bitter medicinal smell')">
+          🌿 Feathery leaves & bitter smell
+        </button>
+        <button type="button" class="preset-chip" onclick="setPreset('A golden shower tree with cascading bright yellow flowers and long dark brown hanging pods')">
+          🌺 Golden shower cascades
+        </button>
+        <button type="button" class="preset-chip" onclick="setPreset('A massive banyan tree with thick aerial prop roots hanging down from branches to the ground')">
+          🌳 Aerial roots to ground
+        </button>
+      `;
+    }
+    if (voiceMatchBtn) {
+      voiceMatchBtn.innerHTML = `<span>🔍 Find Tree →</span>`;
+    }
+    if (micStatus) {
+      micStatus.textContent = currentLang === "en" ? "🎙️ Tap Speak or type your tree observation" : "🎙️ குரலில் அல்லது தட்டச்சு செய்து மரத்தை விவரிக்கவும்";
+    }
+    if (stepTapLabel) {
+      stepTapLabel.textContent = currentLang === "en"
+        ? "👁️ Prefer 7 step-by-step tree questions? Tap here →"
+        : "👁️ 7 படிநிலைகளில் மரத்தை அடையாளம் காண தட்டவும் →";
+    }
+    if (encounterLookUpText) encounterLookUpText.textContent = "LOOK UP AT THE LIVING TREE";
+    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "🌳";
+  } else {
+    // Birds
+    if (spokenInput) {
+      spokenInput.placeholder = currentLang === "en"
+        ? "Describe what you see outdoors... e.g. A black bird with a red crest on its head in a neem tree"
+        : "வெளியே காணும் பறவையை விவரிக்கவும்... எ.கா. தலையில் கொண்டையுடன் சிவப்பு நிற வால் கொண்ட கருப்பு பறவை";
+    }
+    if (presetsLabel) {
+      presetsLabel.textContent = currentLang === "en" ? "Try an example sighting:" : "பறவையின் உதாரணக் குறிப்பு:";
+    }
+    if (presetsWrap) {
+      presetsWrap.innerHTML = `
+        <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
+          🐦 Crest & red vent
+        </button>
+        <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
+          🐤 Yellow bill & eye patch
+        </button>
+        <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
+          🦅 Forked tail on wire
+        </button>
+      `;
+    }
+    if (voiceMatchBtn) {
+      voiceMatchBtn.innerHTML = `<span>🔍 Find Creature →</span>`;
+    }
+    if (micStatus) {
+      micStatus.textContent = currentLang === "en" ? "🎙️ Tap Speak or type your bird sighting" : "🎙️ குரலில் அல்லது தட்டச்சு செய்து பறவையை விவரிக்கவும்";
+    }
+    if (stepTapLabel) {
+      stepTapLabel.textContent = currentLang === "en"
+        ? "👁️ Prefer 5 step-by-step diagnostic questions? Tap here →"
+        : "👁️ 5 படிநிலைகளில் பறவையை அடையாளம் காண தட்டவும் →";
+    }
+    if (encounterLookUpText) encounterLookUpText.textContent = "LOOK UP AT THE CREATURE";
+    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "👁️";
+  }
+}
+
 function startObservation() {
   answers = {};
   freeText = "";
@@ -604,7 +740,7 @@ function getCategoryConfig() {
 // Render Question Screen
 function renderCurrentQuestion() {
   const catConfig = getCategoryConfig();
-  if (!catConfig || !catConfig.questions[currentQuestionIndex]) {
+  if (!catConfig || !catConfig.questions || !catConfig.questions[currentQuestionIndex]) {
     renderSummaryScreen();
     return;
   }
@@ -620,13 +756,28 @@ function renderCurrentQuestion() {
     ? `Question ${currentQuestionIndex + 1} of ${totalQ}`
     : `கேள்வி ${currentQuestionIndex + 1} / ${totalQ}`;
 
-  // Trees Safety Banner
+  // Nav and Back Button Text
+  const questionBackBtn = document.getElementById("question-back-btn");
+  if (questionBackBtn) {
+    questionBackBtn.textContent = currentQuestionIndex === 0
+      ? (currentLang === "en" ? "← Back to Home" : "← முகப்புக்கு")
+      : (currentLang === "en" ? "← Previous Question" : "← முந்தைய கேள்வி");
+  }
+
+  const prevBtn = document.getElementById("prev-btn");
+  if (prevBtn) {
+    prevBtn.style.display = currentQuestionIndex > 0 ? "inline-block" : "none";
+  }
+
+  // Trees Safety Banner with Safe Guard
   const safetyBanner = document.getElementById("safety-banner");
-  if (catConfig.safety_warning_en) {
-    safetyBanner.style.display = "flex";
-    safetyBanner.textContent = currentLang === "en" ? catConfig.safety_warning_en : catConfig.safety_warning_ta;
-  } else {
-    safetyBanner.style.display = "none";
+  if (safetyBanner) {
+    if (catConfig.safety_warning_en) {
+      safetyBanner.style.display = "flex";
+      safetyBanner.textContent = currentLang === "en" ? catConfig.safety_warning_en : catConfig.safety_warning_ta;
+    } else {
+      safetyBanner.style.display = "none";
+    }
   }
 
   // Prompts
@@ -694,17 +845,22 @@ function renderCurrentQuestion() {
 
   // Free Text input for sounds or notes
   const freeTextBox = document.getElementById("free-text-section");
-  if (q.has_free_text) {
-    freeTextBox.style.display = "block";
-    document.getElementById("free-text-title").textContent = currentLang === "en"
-      ? q.free_text_prompt_en
-      : q.free_text_prompt_ta;
-    const input = document.getElementById("free-text-input");
-    input.placeholder = currentLang === "en" ? q.free_text_placeholder_en : q.free_text_placeholder_ta;
-    input.value = freeText;
-    input.oninput = (e) => (freeText = e.target.value);
-  } else {
-    freeTextBox.style.display = "none";
+  if (freeTextBox) {
+    if (q.has_free_text) {
+      freeTextBox.style.display = "block";
+      const titleEl = document.getElementById("free-text-title");
+      if (titleEl) {
+        titleEl.textContent = currentLang === "en" ? q.free_text_prompt_en : q.free_text_prompt_ta;
+      }
+      const input = document.getElementById("free-text-input");
+      if (input) {
+        input.placeholder = currentLang === "en" ? q.free_text_placeholder_en : q.free_text_placeholder_ta;
+        input.value = freeText;
+        input.oninput = (e) => (freeText = e.target.value);
+      }
+    } else {
+      freeTextBox.style.display = "none";
+    }
   }
 }
 
@@ -1073,6 +1229,7 @@ function renderDeckCards(filter) {
 }
 
 function refreshCurrentScreen() {
+  updateCategoryUI();
   loadStats();
   loadQuests();
   if (questionView.classList.contains("active")) {
@@ -1085,8 +1242,35 @@ function refreshCurrentScreen() {
 }
 
 function resetToHome() {
-  if (encounterState) encounterState.active = false;
+  if (encounterState) {
+    encounterState.active = false;
+    encounterState.turn = 1;
+    encounterState.target_id = null;
+  }
+
+  // Stop any playing voice narrator audio
+  if (narratorAudio) {
+    narratorAudio.pause();
+    narratorAudio.currentTime = 0;
+  }
+
+  // Stop any playing bird call audio
+  const birdAudio = document.getElementById("bird-call-audio");
+  if (birdAudio) {
+    birdAudio.pause();
+    birdAudio.currentTime = 0;
+  }
+  currentBirdAudioUrl = null;
+  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "🎵 Hear Bird Call / Song");
+  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "🎵 Hear Call");
+
+  // Stop recording if active
+  if (isRecording) {
+    stopVoiceRecording();
+  }
+
   showView("home-view");
+  updateCategoryUI();
   loadStats();
   loadQuests();
 }
