@@ -156,6 +156,30 @@ async def encounter_turn_endpoint(payload: EncounterPayload):
     )
     return result
 
+class PocketWalkPayload(BaseModel):
+    duration_seconds: int = 0
+    steps: int = 0
+    xp_earned: int = 0
+
+@app.post("/api/pocket/complete")
+async def complete_pocket_walk(payload: PocketWalkPayload):
+    """
+    Saves Touch Grass Pocket Mode walk session and awards XP.
+    """
+    conn = get_connection()
+    try:
+        if payload.xp_earned > 0:
+            conn.execute(
+                "UPDATE user_profile SET xp = xp + ? WHERE id = 1",
+                (payload.xp_earned,)
+            )
+            conn.commit()
+        profile_row = conn.execute("SELECT xp FROM user_profile WHERE id = 1").fetchone()
+        new_xp = profile_row["xp"] if profile_row else 0
+        return {"success": True, "total_xp": new_xp, "xp_earned": payload.xp_earned}
+    finally:
+        conn.close()
+
 
 @app.get("/api/quests")
 async def get_daily_quests():

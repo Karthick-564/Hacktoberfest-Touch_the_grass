@@ -13,7 +13,7 @@
       });
     }
   </script>
-  <link rel="stylesheet" href="/static/css/style.css?v=12">
+  <link rel="stylesheet" href="/static/css/style.css?v=15">
 </head>
 <body>
   <!-- Left Sidebar Drawer (Tasks & Explorer Hub) -->
@@ -109,6 +109,10 @@
               <span>👁️ 5-Question Step Identifier</span>
               <span class="nav-arrow">→</span>
             </button>
+            <button type="button" class="sidebar-nav-btn" id="sidebar-pocket-link">
+              <span>🚶 Pocket Walk Mode (Touch Grass Timer)</span>
+              <span class="nav-arrow">→</span>
+            </button>
           </div>
         </div>
       </div>
@@ -133,6 +137,9 @@
         </div>
       </div>
       <div class="header-right">
+        <button type="button" id="pocket-mode-btn" class="pocket-mode-pill-btn" title="Touch Grass Walk Mode">
+          🚶 Walk
+        </button>
         <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Open Field Journal">
           📖 <span id="journal-btn-count">0/80</span>
         </button>
@@ -223,13 +230,13 @@
 
     <!-- 1B. Pokemon Go Wild Encounter View -->
     <main id="encounter-view" class="view-screen">
-      <button type="button" id="encounter-top-back-btn" class="view-back-btn">
-        ← Back to Home
-      </button>
-
       <div class="encounter-screen-card">
-        <!-- Radar Icon -->
-        <div class="encounter-radar-slim">📡</div>
+        <div class="encounter-top-bar">
+          <button type="button" id="encounter-top-back-btn" class="subtle-back-pill" title="Back to Home">
+            ← Back
+          </button>
+          <div class="encounter-radar-slim">📡</div>
+        </div>
 
         <!-- Phase A: Investigating (2-way Detective Dialogue) -->
         <div id="encounter-investigating">
@@ -257,6 +264,10 @@
             </button>
             <div id="encounter-mic-status" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Tap to speak</div>
           </div>
+
+          <button type="button" id="cancel-encounter-btn" class="secondary-btn" style="margin-top: 14px; width: 100%;">
+            Cancel & Back to Home
+          </button>
         </div>
 
         <!-- Phase B: Gotcha Catch Reveal Screen -->
@@ -267,7 +278,7 @@
           </div>
 
           <div class="revealed-card">
-            <img id="caught-img" class="revealed-img" src="" alt="Species">
+            <img id="caught-img" class="revealed-img" src="/static/images/fallback.jpg" alt="Species" onerror="this.src='/static/images/fallback.jpg'">
             <div class="revealed-body">
               <span id="caught-rarity" class="badge">Everyday</span>
               <div id="caught-common-name" class="revealed-title">Common Name</div>
@@ -283,23 +294,19 @@
             </button>
           </div>
 
-          <div class="outdoor-note" style="margin-bottom: 12px; font-weight: 600;">
-            🌿 Now put your phone away and touch grass! Observe this bird for 30 seconds.
+          <div class="outdoor-note" id="caught-outdoor-note" style="margin-bottom: 14px; font-weight: 600;">
+            🌿 Now put your phone away and touch grass! Observe this creature for 30 seconds.
           </div>
 
-          <div style="display: flex; gap: 8px;">
-            <button type="button" id="caught-view-journal-btn" class="start-btn" style="flex: 1;">
-              Open Journal 📖
-            </button>
-            <button type="button" id="caught-next-btn" class="secondary-btn" style="flex: 1; margin: 0;">
+          <div class="encounter-actions-grid">
+            <button type="button" id="caught-next-btn" class="start-btn">
               + Spot Another
+            </button>
+            <button type="button" id="caught-view-journal-btn" class="secondary-btn">
+              Open Journal 📖
             </button>
           </div>
         </div>
-
-        <button type="button" id="cancel-encounter-btn" class="secondary-btn" style="margin-top: 12px;">
-          ← Back to Home
-        </button>
       </div>
     </main>
 
@@ -444,6 +451,45 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=14"></script>
+  <!-- 6. Touch Grass Pocket Mode (Walk & Listen Outdoors) -->
+  <div id="pocket-mode-screen" class="pocket-mode-overlay" style="display: none;">
+    <div class="pocket-mode-content">
+      <div class="pocket-aura-pulse">
+        <span class="pocket-icon">🌿</span>
+      </div>
+      <div class="pocket-badge">POCKET MODE ACTIVE · TOUCHING GRASS</div>
+      <div class="pocket-timer-large" id="pocket-timer">00:00</div>
+      <div class="pocket-subtitle">Put phone in pocket or hold by your side. Look up and enjoy nature.</div>
+
+      <div class="pocket-stats-card">
+        <div class="pocket-stat">
+          <div class="pocket-stat-val" id="pocket-xp-earned">+0 XP</div>
+          <div class="pocket-stat-lbl">Walk XP</div>
+        </div>
+        <div class="pocket-stat">
+          <div class="pocket-stat-val" id="pocket-steps-val">0</div>
+          <div class="pocket-stat-lbl">Steps Taken</div>
+        </div>
+        <div class="pocket-stat">
+          <div class="pocket-stat-val" id="pocket-cues-val">🎧 Active</div>
+          <div class="pocket-stat-lbl">Nature Radar</div>
+        </div>
+      </div>
+
+      <div class="pocket-prompt-card">
+        <span id="pocket-live-prompt">🍃 Listen to the breeze and bird calls around you...</span>
+      </div>
+
+      <div class="pocket-unlock-wrap">
+        <button type="button" id="pocket-exit-btn" class="pocket-unlock-btn">
+          <span id="pocket-unlock-text">Double-Tap or Hold to Exit</span>
+          <div id="pocket-unlock-progress" class="pocket-unlock-progress"></div>
+        </button>
+        <div class="pocket-unlock-hint">Accidental pocket touch protection active</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js?v=15"></script>
 </body>
 </html>

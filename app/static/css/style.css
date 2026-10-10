@@ -1330,4 +1330,269 @@ body::before {
   gap: 6px;
 }
 
+/* Secondary Buttons (Frosted Nature Glass) */
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(22, 101, 52, 0.22);
+  color: var(--text-main);
+  padding: 11px 18px;
+  border-radius: 24px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.secondary-btn:hover {
+  background: #ffffff;
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(21, 128, 61, 0.12);
+}
+
+.secondary-btn:active {
+  transform: scale(0.98);
+}
+
+/* Subtle Back Pill Button */
+.subtle-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(22, 101, 52, 0.16);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.subtle-back-pill:hover {
+  background: #ffffff;
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.12);
+}
+
+.encounter-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.encounter-actions-grid {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.encounter-actions-grid .start-btn,
+.encounter-actions-grid .secondary-btn {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 0.86rem;
+  border-radius: 20px;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Pocket Mode Header Pill Button */
+.pocket-mode-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #0f2415 0%, #15803d 100%);
+  color: #ffffff;
+  border: 1px solid rgba(134, 239, 172, 0.35);
+  padding: 5px 12px;
+  border-radius: 18px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(15, 36, 21, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pocket-mode-pill-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(21, 128, 61, 0.4);
+}
+
+/* Pocket Mode Fullscreen AMOLED Overlay */
+.pocket-mode-overlay {
+  position: fixed;
+  inset: 0;
+  background: #040905;
+  color: #e2f5e7;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.pocket-mode-content {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pocket-aura-pulse {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: aura-breathe 3s infinite ease-in-out;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+@keyframes aura-breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+  50% { transform: scale(1.12); box-shadow: 0 0 40px rgba(34, 197, 94, 0.45); }
+}
+
+.pocket-icon {
+  font-size: 2.2rem;
+}
+
+.pocket-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #86efac;
+  text-transform: uppercase;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+.pocket-timer-large {
+  font-size: 3.4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(34, 197, 94, 0.4);
+}
+
+.pocket-subtitle {
+  font-size: 0.85rem;
+  color: #8da493;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+.pocket-stats-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 12px 10px;
+}
+
+.pocket-stat-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #86efac;
+}
+
+.pocket-stat-lbl {
+  font-size: 0.68rem;
+  color: #8da493;
+  margin-top: 2px;
+}
+
+.pocket-prompt-card {
+  width: 100%;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 0.84rem;
+  color: #bbf7d0;
+  line-height: 1.4;
+  font-style: italic;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pocket-unlock-wrap {
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pocket-unlock-btn {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 14px 20px;
+  border-radius: 28px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pocket-unlock-btn:active {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: #22c55e;
+}
+
+.pocket-unlock-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  background: rgba(34, 197, 94, 0.45);
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+.pocket-unlock-hint {
+  font-size: 0.72rem;
+  color: #6b8271;
+}
+
+
 

@@ -396,6 +396,243 @@ function setupEventListeners() {
       startObservation();
     });
   }
+
+  // Pocket Mode Trigger Listeners
+  const pocketModeBtn = document.getElementById("pocket-mode-btn");
+  if (pocketModeBtn) pocketModeBtn.addEventListener("click", startPocketMode);
+
+  const sidebarPocketLink = document.getElementById("sidebar-pocket-link");
+  if (sidebarPocketLink) {
+    sidebarPocketLink.addEventListener("click", () => {
+      closeSidebar();
+      startPocketMode();
+    });
+  }
+
+  // Pocket Mode Unlock Button Listeners (Double-tap or Hold for 1s)
+  const pocketExitBtn = document.getElementById("pocket-exit-btn");
+  if (pocketExitBtn) {
+    pocketExitBtn.addEventListener("dblclick", stopPocketMode);
+
+    let holdStart = 0;
+    let holdTimer = null;
+    const progressEl = document.getElementById("pocket-unlock-progress");
+
+    function startHold() {
+      holdStart = Date.now();
+      if (progressEl) progressEl.style.width = "100%";
+      holdTimer = setTimeout(() => {
+        stopPocketMode();
+      }, 1100);
+    }
+
+    function cancelHold() {
+      if (holdTimer) clearTimeout(holdTimer);
+      if (progressEl) progressEl.style.width = "0%";
+    }
+
+    pocketExitBtn.addEventListener("pointerdown", startHold);
+    pocketExitBtn.addEventListener("pointerup", cancelHold);
+    pocketExitBtn.addEventListener("pointercancel", cancelHold);
+    pocketExitBtn.addEventListener("pointerleave", cancelHold);
+  }
+}
+
+// ==========================================
+// Touch Grass Pocket Mode (Walk & Listen Outdoors)
+// ==========================================
+let pocketState = {
+  active: false,
+  secondsElapsed: 0,
+  steps: 0,
+  xpEarned: 0,
+  timerInterval: null,
+  promptInterval: null,
+  cueInterval: null,
+  wakeLock: null,
+  motionHandler: null,
+  promptIndex: 0
+};
+
+const pocketPrompts = [
+  "🍃 Listen carefully: how many distinct bird songs can you separate?",
+  "🌳 Look up at the tree canopy. Notice the texture of the leaves and sunlight.",
+  "🌿 Feel the soil or pavement under your feet. Breathe in the open air.",
+  "🕊️ Watch for quick movements or silhouettes in the branches above.",
+  "🍂 Pause for 10 seconds. Identify the tallest living tree near you.",
+  "💧 Look around for moisture, dew, or pollinators hovering around blooms.",
+  "🌾 Let your gaze soften across the horizon. Touch grass and feel present."
+];
+
+async function startPocketMode() {
+  const overlay = document.getElementById("pocket-mode-screen");
+  if (!overlay) return;
+
+  pocketState.active = true;
+  pocketState.secondsElapsed = 0;
+  pocketState.steps = 0;
+  pocketState.xpEarned = 0;
+  pocketState.promptIndex = 0;
+
+  overlay.style.display = "flex";
+  updatePocketTimerDisplay();
+
+  const xpEl = document.getElementById("pocket-xp-earned");
+  const stepsEl = document.getElementById("pocket-steps-val");
+  const promptEl = document.getElementById("pocket-live-prompt");
+  if (xpEl) xpEl.textContent = "+0 XP";
+  if (stepsEl) stepsEl.textContent = "0";
+  if (promptEl) promptEl.textContent = pocketPrompts[0];
+
+  // Request WakeLock if supported to prevent complete screen shutoff
+  if ("wakeLock" in navigator) {
+    try {
+      pocketState.wakeLock = await navigator.wakeLock.request("screen");
+    } catch (e) {
+      console.warn("Wake lock not available:", e);
+    }
+  }
+
+  // Motion sensor for real outdoor walking
+  let lastAcc = 0;
+  function handleMotion(e) {
+    if (!pocketState.active) return;
+    const acc = e.accelerationIncludingGravity;
+    if (acc) {
+      const delta = Math.abs((acc.y || 0) - lastAcc);
+      if (delta > 2.2) {
+        pocketState.steps += 1;
+        if (stepsEl) stepsEl.textContent = pocketState.steps;
+      }
+      lastAcc = acc.y || 0;
+    }
+  }
+  if (window.DeviceMotionEvent) {
+    try {
+      window.addEventListener("devicemotion", handleMotion, { passive: true });
+      pocketState.motionHandler = handleMotion;
+    } catch (e) {}
+  }
+
+  // 1-second cadence timer
+  pocketState.timerInterval = setInterval(() => {
+    if (!pocketState.active) return;
+    pocketState.secondsElapsed++;
+    updatePocketTimerDisplay();
+
+    // Increment simulated steps if device motion not firing
+    if (!pocketState.motionHandler && pocketState.secondsElapsed % 2 === 0) {
+      pocketState.steps += 1 + Math.floor(Math.random() * 2);
+      if (stepsEl) stepsEl.textContent = pocketState.steps;
+    }
+
+    // Award +10 Touch Grass XP every 30 seconds of walking
+    if (pocketState.secondsElapsed > 0 && pocketState.secondsElapsed % 30 === 0) {
+      pocketState.xpEarned += 10;
+      if (xpEl) xpEl.textContent = `+${pocketState.xpEarned} XP`;
+    }
+  }, 1000);
+
+  // Rotate nature immersion prompts every 18 seconds
+  pocketState.promptInterval = setInterval(() => {
+    if (!pocketState.active) return;
+    pocketState.promptIndex = (pocketState.promptIndex + 1) % pocketPrompts.length;
+    if (promptEl) {
+      promptEl.style.opacity = "0.2";
+      setTimeout(() => {
+        promptEl.textContent = pocketPrompts[pocketState.promptIndex];
+        promptEl.style.opacity = "1";
+      }, 300);
+    }
+  }, 18000);
+
+  // Periodic subtle nature chime / bird call radar every 40s
+  pocketState.cueInterval = setInterval(() => {
+    if (!pocketState.active) return;
+    playPocketNatureCue();
+  }, 40000);
+}
+
+function updatePocketTimerDisplay() {
+  const timerEl = document.getElementById("pocket-timer");
+  if (!timerEl) return;
+  const mins = Math.floor(pocketState.secondsElapsed / 60).toString().padStart(2, "0");
+  const secs = (pocketState.secondsElapsed % 60).toString().padStart(2, "0");
+  timerEl.textContent = `${mins}:${secs}`;
+}
+
+function playPocketNatureCue() {
+  const candidates = (currentDeck || []).filter(s => s.audio_url);
+  if (candidates.length > 0) {
+    const randomSpecies = candidates[Math.floor(Math.random() * candidates.length)];
+    const cueAudio = document.getElementById("bird-call-audio");
+    if (cueAudio && randomSpecies.audio_url) {
+      cueAudio.volume = 0.35;
+      cueAudio.src = randomSpecies.audio_url;
+      cueAudio.play().catch(() => {});
+      const cueStatus = document.getElementById("pocket-cues-val");
+      if (cueStatus) {
+        cueStatus.textContent = `🎵 ${randomSpecies.common_name}`;
+        setTimeout(() => {
+          if (cueStatus && pocketState.active) cueStatus.textContent = "🎧 Active";
+        }, 8000);
+      }
+    }
+  }
+}
+
+async function stopPocketMode() {
+  if (!pocketState.active) return;
+  pocketState.active = false;
+
+  if (pocketState.timerInterval) clearInterval(pocketState.timerInterval);
+  if (pocketState.promptInterval) clearInterval(pocketState.promptInterval);
+  if (pocketState.cueInterval) clearInterval(pocketState.cueInterval);
+
+  if (pocketState.motionHandler) {
+    try {
+      window.removeEventListener("devicemotion", pocketState.motionHandler);
+    } catch (e) {}
+  }
+
+  if (pocketState.wakeLock) {
+    try {
+      await pocketState.wakeLock.release();
+    } catch (e) {}
+    pocketState.wakeLock = null;
+  }
+
+  // Minimum bonus for taking a walk > 10 seconds
+  if (pocketState.secondsElapsed >= 10 && pocketState.xpEarned === 0) {
+    pocketState.xpEarned = 10;
+  }
+
+  const earned = pocketState.xpEarned;
+  const steps = pocketState.steps;
+  const duration = pocketState.secondsElapsed;
+
+  const overlay = document.getElementById("pocket-mode-screen");
+  if (overlay) overlay.style.display = "none";
+
+  // Send walk stats to server if XP earned
+  if (earned > 0) {
+    try {
+      await fetch("/api/pocket/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          duration_seconds: duration,
+          steps: steps,
+          xp_earned: earned
+        })
+      });
+      loadStats();
+      loadQuests();
+      alert(`🌿 Touch Grass Walk Complete!\nYou spent ${Math.floor(duration / 60)}m ${duration % 60}s outdoors, took ${steps} steps, and earned +${earned} Nature XP!`);
+    } catch (e) {
+      console.error("Pocket complete error:", e);
+    }
+  }
 }
 
 // Start Pokemon Go Encounter Mode
@@ -486,7 +723,6 @@ async function sendEncounterTurn(userInput) {
       const sci = document.getElementById("caught-sci-name");
       const fact = document.getElementById("caught-fact");
 
-      if (img) img.src = sp.image_local_path || "/static/images/fallback.jpg";
       if (rarity) {
         rarity.textContent = sp.rarity;
         rarity.className = `badge ${sp.rarity === 'Everyday' ? 'badge-everyday' : sp.rarity === 'Regular' ? 'badge-regular' : 'badge-special'}`;
@@ -495,6 +731,24 @@ async function sendEncounterTurn(userInput) {
       if (tamil) tamil.textContent = sp.tamil_name || "";
       if (sci) sci.textContent = sp.scientific_name;
       if (fact) fact.textContent = sp.local_fact || sp.summary || "";
+
+      if (img) {
+        const imgSrc = sp.image_local_path || sp.image_url || "/static/images/fallback.jpg";
+        img.src = imgSrc;
+        img.onerror = function() {
+          if (sp.image_url && this.src !== sp.image_url) {
+            this.src = sp.image_url;
+          } else {
+            this.src = "/static/images/fallback.jpg";
+          }
+        };
+      }
+
+      const outdoorNote = document.getElementById("caught-outdoor-note");
+      if (outdoorNote) {
+        const typeStr = currentCategory === "trees" ? "tree" : "bird";
+        outdoorNote.textContent = `🌿 Now put your phone away and touch grass! Observe this ${typeStr} for 30 seconds.`;
+      }
 
       // Real Bird Call Audio playback on Catch Screen
       const caughtAudioContainer = document.getElementById("caught-audio-container");
@@ -1032,7 +1286,7 @@ function renderResultsScreen(data) {
       : cand.rarity === "Regular" ? "badge-regular" : "badge-special";
 
     const tamilText = cand.tamil_name ? `<div class="candidate-tamil">${cand.tamil_name}</div>` : "";
-    const imgSrc = cand.image_local_path || "/static/images/fallback.jpg";
+    const imgSrc = cand.image_local_path || cand.image_url || "/static/images/fallback.jpg";
 
     const audioButtonHtml = cand.audio_url ? `
       <div style="margin-top: 6px;">
@@ -1043,7 +1297,7 @@ function renderResultsScreen(data) {
 
     card.innerHTML = `
       <div class="candidate-header">
-        <img class="candidate-img" src="${imgSrc}" alt="${cand.common_name}" onerror="this.style.display='none'">
+        <img class="candidate-img" src="${imgSrc}" alt="${cand.common_name}" onerror="this.src='/static/images/fallback.jpg'">
         <div class="candidate-meta">
           <span class="badge ${badgeClass}">${cand.rarity}</span>
           <div class="candidate-title">${cand.common_name}</div>
@@ -1083,7 +1337,12 @@ window.unlockSpecies = async function(speciesId) {
       const sci = document.getElementById("unlock-sci-name");
       const fact = document.getElementById("unlock-fact");
 
-      if (img) img.src = sp.image_local_path || "/static/images/fallback.jpg";
+      if (img) {
+        img.src = sp.image_local_path || sp.image_url || "/static/images/fallback.jpg";
+        img.onerror = function() {
+          this.src = "/static/images/fallback.jpg";
+        };
+      }
       if (rarity) {
         rarity.textContent = sp.rarity;
         rarity.className = `badge ${sp.rarity === 'Everyday' ? 'badge-everyday' : sp.rarity === 'Regular' ? 'badge-regular' : 'badge-special'}`;

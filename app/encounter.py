@@ -30,7 +30,7 @@ def evaluate_encounter_turn(
     try:
         rows = conn.execute(
             """SELECT id, scientific_name, common_name, tamil_name, rarity,
-                      summary, description_text, key_traits, local_fact, image_local_path, audio_url
+                      summary, description_text, key_traits, local_fact, image_local_path, image_url, audio_url
                FROM species WHERE category = ? ORDER BY observation_count DESC""",
             (category,)
         ).fetchall()
