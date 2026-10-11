@@ -77,7 +77,7 @@ def generate_speech(text: str) -> Optional[str]:
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
             audio_bytes = resp.read()
             if len(audio_bytes) > 500:
                 with open(target_path, "wb") as f:

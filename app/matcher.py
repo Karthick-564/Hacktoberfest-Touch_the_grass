@@ -114,7 +114,13 @@ def prefilter_candidates(
             score += 1.5
 
         # 4. Text keyword matches in Description, Summary, and Tamil Name
-        desc_text = (sp.get("description_text", "") + " " + sp.get("summary", "") + " " + sp.get("common_name", "") + " " + sp.get("tamil_name", "")).lower()
+        desc_parts = [
+            str(sp.get("description_text") or ""),
+            str(sp.get("summary") or ""),
+            str(sp.get("common_name") or ""),
+            str(sp.get("tamil_name") or "")
+        ]
+        desc_text = " ".join(desc_parts).lower()
         obs_words = set(re.findall(r'\b\w{3,}\b', obs_text))
         matched_words = [w for w in obs_words if w in desc_text]
         score += min(len(matched_words) * 0.7, 5.0)
@@ -141,7 +147,7 @@ def build_matching_prompt(candidates: List[Dict[str, Any]], observation: Dict[st
             "species_id": c["id"],
             "name": f"{c['common_name']}{tamil_display} ({c['scientific_name']})",
             "rarity": c.get("rarity", "Everyday"),
-            "grounded_description": c.get("description_text", c.get("summary", ""))[:300]
+            "grounded_description": str(c.get("description_text") or c.get("summary") or "")[:300]
         })
 
     candidate_json = json.dumps(candidate_summary, indent=2, ensure_ascii=False)
@@ -241,7 +247,7 @@ def match_observation(
                 pass
             feature = traits.get("distinctive_feature") or traits.get("beak_or_head")
             if not feature or feature == "unknown":
-                feature = c.get("summary", "")[:70]
+                feature = str(c.get("summary") or "")[:70]
             confirm_q = f"Check closely: {feature}?"
 
             results.append({

@@ -799,6 +799,9 @@ async function sendEncounterTurn(userInput) {
         photo_path: currentSightingPhoto
       })
     });
+    if (!res.ok) {
+      throw new Error(`Encounter API error HTTP ${res.status}`);
+    }
     const data = await res.json();
 
     if (data.phase === "question") {
@@ -903,9 +906,16 @@ async function sendEncounterTurn(userInput) {
 
       loadStats();
       loadQuests();
-    }
   } catch (err) {
     console.error("Encounter turn error:", err);
+    const promptText = document.getElementById("encounter-prompt-text");
+    if (promptText) promptText.textContent = "Could not reach regional observer. Please try again or return home.";
+    const choicesContainer = document.getElementById("encounter-choices");
+    if (choicesContainer) {
+      choicesContainer.innerHTML = `
+        <button type="button" class="choice-chip" onclick="resetToHome()"><span>Return to Home</span> <span>→</span></button>
+      `;
+    }
   }
 }
 
