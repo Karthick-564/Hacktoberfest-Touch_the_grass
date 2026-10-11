@@ -17,7 +17,8 @@ def evaluate_encounter_turn(
     user_input: str,
     turn: int = 1,
     target_id: Optional[int] = None,
-    history: Optional[List[Dict[str, str]]] = None
+    history: Optional[List[Dict[str, str]]] = None,
+    photo_path: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Handles multi-turn encounter dialogue:
@@ -48,35 +49,41 @@ def evaluate_encounter_turn(
         is_negative = any(w in clean_input for w in ["no", "nope", "not", "different", "smooth", "flat", "black", "none", "straight", "2", "two"])
 
         if is_positive or not is_negative:
-            # Successfully Caught! Register in user collection
+            # Successfully Verified! Register in user collection with photo assurance
+            xp_bonus = 75 if photo_path else 50
             conn = get_connection()
             try:
                 conn.execute(
-                    """INSERT INTO user_collection (species_id, notes) VALUES (?, ?)
-                       ON CONFLICT(species_id) DO NOTHING""",
-                    (target["id"], f"Spotted during wild field encounter: {user_input}")
+                    """INSERT INTO user_collection (species_id, notes, photo_path) VALUES (?, ?, ?)
+                       ON CONFLICT(species_id) DO UPDATE SET
+                       notes = coalesce(excluded.notes, user_collection.notes),
+                       photo_path = coalesce(excluded.photo_path, user_collection.photo_path)""",
+                    (target["id"], f"Verified field sighting: {user_input}", photo_path)
                 )
-                conn.execute("UPDATE user_profile SET xp = xp + 50 WHERE id = 1")
+                conn.execute("UPDATE user_profile SET xp = xp + ? WHERE id = 1", (xp_bonus,))
                 conn.commit()
             finally:
                 conn.close()
 
             tamil_str = f" ({target.get('tamil_name')})" if target.get('tamil_name') else ""
-            celebration = (
-                f"Gotcha! You discovered a {target['common_name']}{tamil_str}! "
-                f"{target.get('local_fact', target.get('summary', ''))[:110]}. "
-                f"Registered to your Field Journal!"
+            photo_mention = " Sighting photo assurance verified." if photo_path else ""
+            naturalist_speech = (
+                f"Species verified: {target['common_name']}{tamil_str}. "
+                f"{target.get('local_fact', target.get('summary', ''))[:120]}. "
+                f"{photo_mention} Registered in your Field Journal. Put your phone away and spend the next 30 seconds observing this specimen."
             )
-            audio_url = generate_speech(celebration)
+            audio_url = generate_speech(naturalist_speech)
 
             return {
                 "phase": "caught",
                 "status": "success",
                 "species": target,
-                "naturalist_speech": celebration,
+                "naturalist_speech": naturalist_speech,
                 "audio_url": audio_url,
-                "xp_gained": 50,
-                "outdoor_prompt": "Now look up! Put your phone down and watch it move for 30 seconds."
+                "xp_gained": xp_bonus,
+                "has_photo_assurance": bool(photo_path),
+                "photo_path": photo_path,
+                "outdoor_prompt": "Put your phone down. Observe this specimen for 30 seconds."
             }
 
     # Case B: Turn 1 or Pivoting to a new candidate

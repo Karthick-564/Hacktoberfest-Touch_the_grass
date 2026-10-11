@@ -21,6 +21,64 @@ const transcriptBox = document.getElementById("transcript-box");
 const transcriptText = document.getElementById("transcript-text");
 const narratorAudio = document.getElementById("narrator-audio");
 
+let currentSightingPhoto = null;
+let lastSpokenSpeech = { text: "", audioUrl: null };
+
+// Interactive Naturalist Speech Engine with Web Speech API Fallback
+window.playNaturalistSpeech = function(text, audioUrl, context) {
+  lastSpokenSpeech = { text, audioUrl };
+  const waveId = context === "caught" ? "speech-wave-caught" : "speech-wave-investigating";
+  const waveEl = document.getElementById(waveId);
+
+  if (narratorAudio) {
+    narratorAudio.pause();
+    narratorAudio.currentTime = 0;
+  }
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+
+  if (audioUrl && narratorAudio) {
+    narratorAudio.src = audioUrl;
+    narratorAudio.onplay = () => { if (waveEl) waveEl.classList.add("speaking"); };
+    narratorAudio.onended = () => { if (waveEl) waveEl.classList.remove("speaking"); };
+    narratorAudio.onpause = () => { if (waveEl) waveEl.classList.remove("speaking"); };
+    narratorAudio.onerror = () => { fallbackWebSpeech(text, waveEl); };
+
+    const playPromise = narratorAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        fallbackWebSpeech(text, waveEl);
+      });
+    }
+  } else {
+    fallbackWebSpeech(text, waveEl);
+  }
+};
+
+function fallbackWebSpeech(text, waveEl) {
+  if (!("speechSynthesis" in window) || !text) return;
+  try {
+    const cleanText = text.replace(/<[^>]*>/g, "");
+    const utter = new SpeechSynthesisUtterance(cleanText);
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    utter.onstart = () => { if (waveEl) waveEl.classList.add("speaking"); };
+    utter.onend = () => { if (waveEl) waveEl.classList.remove("speaking"); };
+    utter.onerror = () => { if (waveEl) waveEl.classList.remove("speaking"); };
+    window.speechSynthesis.speak(utter);
+  } catch (e) {
+    console.warn("Speech synthesis error:", e);
+  }
+}
+
+window.replayLastSpeech = function() {
+  if (lastSpokenSpeech.text || lastSpokenSpeech.audioUrl) {
+    const isCaught = document.getElementById("encounter-caught")?.style.display === "block";
+    window.playNaturalistSpeech(lastSpokenSpeech.text, lastSpokenSpeech.audioUrl, isCaught ? "caught" : "investigating");
+  }
+};
+
 let recognition = null;
 let isRecording = false;
 let currentTranscript = "";
@@ -149,7 +207,7 @@ async function startVoiceRecording() {
     mediaRecorder.start(250);
     isRecording = true;
     micBtn.classList.add("listening");
-    micStatus.textContent = "🎙️ Recording... Speak now! Tap red mic when finished.";
+    micStatus.textContent = "Recording... Speak now! Tap mic when finished.";
     startVolumeMeterWithStream(stream);
 
   } catch (err) {
@@ -188,7 +246,7 @@ function startVolumeMeterWithStream(stream) {
       if (volumeFill) {
         volumeFill.style.width = pct + "%";
         if (pct > 12) {
-          micStatus.textContent = "🎙️ Recording voice (" + pct + "% volume)... Tap red mic when done.";
+          micStatus.textContent = "Recording voice (" + pct + "% volume)... Tap mic when done.";
         }
       }
       animFrameId = requestAnimationFrame(checkVolume);
@@ -243,6 +301,63 @@ function setupEventListeners() {
       } else {
         alert("Please speak or enter what you see (or tap one of the examples below)");
       }
+    });
+  }
+
+  // Camera & Photo Assurance Listeners
+  const cameraInput = document.getElementById("camera-input");
+  const cameraTriggerBtn = document.getElementById("camera-trigger-btn");
+  const removePhotoBtn = document.getElementById("remove-photo-btn");
+  const photoBar = document.getElementById("photo-assurance-bar");
+  const photoEmpty = document.getElementById("photo-empty-state");
+  const photoPreview = document.getElementById("photo-preview-box");
+  const photoImg = document.getElementById("photo-preview-img");
+
+  if (cameraTriggerBtn && cameraInput) {
+    cameraTriggerBtn.addEventListener("click", () => cameraInput.click());
+  }
+
+  if (cameraInput) {
+    cameraInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (loadEvt) => {
+        const base64Data = loadEvt.target.result;
+        if (photoImg) photoImg.src = base64Data;
+        if (photoEmpty) photoEmpty.style.display = "none";
+        if (photoPreview) photoPreview.style.display = "flex";
+        if (photoBar) photoBar.classList.add("has-photo");
+
+        try {
+          const upRes = await fetch("/api/upload_photo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image_base64: base64Data, filename: file.name })
+          });
+          const upData = await upRes.json();
+          if (upData.success && upData.photo_url) {
+            currentSightingPhoto = upData.photo_url;
+          } else {
+            currentSightingPhoto = base64Data;
+          }
+        } catch (err) {
+          console.warn("Upload fallback to local base64:", err);
+          currentSightingPhoto = base64Data;
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (removePhotoBtn) {
+    removePhotoBtn.addEventListener("click", () => {
+      currentSightingPhoto = null;
+      if (cameraInput) cameraInput.value = "";
+      if (photoEmpty) photoEmpty.style.display = "flex";
+      if (photoPreview) photoPreview.style.display = "none";
+      if (photoBar) photoBar.classList.remove("has-photo");
     });
   }
 
@@ -455,13 +570,13 @@ let pocketState = {
 };
 
 const pocketPrompts = [
-  "🍃 Listen carefully: how many distinct bird songs can you separate?",
-  "🌳 Look up at the tree canopy. Notice the texture of the leaves and sunlight.",
-  "🌿 Feel the soil or pavement under your feet. Breathe in the open air.",
-  "🕊️ Watch for quick movements or silhouettes in the branches above.",
-  "🍂 Pause for 10 seconds. Identify the tallest living tree near you.",
-  "💧 Look around for moisture, dew, or pollinators hovering around blooms.",
-  "🌾 Let your gaze soften across the horizon. Touch grass and feel present."
+  "Listen carefully: how many distinct bird songs can you separate?",
+  "Look up at the tree canopy. Notice the texture of the leaves and sunlight.",
+  "Feel the soil or pavement under your feet. Breathe in the open air.",
+  "Watch for quick movements or silhouettes in the branches above.",
+  "Pause for 10 seconds. Identify the tallest living tree near you.",
+  "Look around for moisture, dew, or pollinators hovering around blooms.",
+  "Let your gaze soften across the horizon. Feel present."
 ];
 
 async function startPocketMode() {
@@ -572,9 +687,9 @@ function playPocketNatureCue() {
       cueAudio.play().catch(() => {});
       const cueStatus = document.getElementById("pocket-cues-val");
       if (cueStatus) {
-        cueStatus.textContent = `🎵 ${randomSpecies.common_name}`;
+        cueStatus.textContent = randomSpecies.common_name;
         setTimeout(() => {
-          if (cueStatus && pocketState.active) cueStatus.textContent = "🎧 Active";
+          if (cueStatus && pocketState.active) cueStatus.textContent = "Active";
         }, 8000);
       }
     }
@@ -628,7 +743,7 @@ async function stopPocketMode() {
       });
       loadStats();
       loadQuests();
-      alert(`🌿 Touch Grass Walk Complete!\nYou spent ${Math.floor(duration / 60)}m ${duration % 60}s outdoors, took ${steps} steps, and earned +${earned} Nature XP!`);
+      alert(`Touch Grass Walk Complete!\nYou spent ${Math.floor(duration / 60)}m ${duration % 60}s outdoors, took ${steps} steps, and earned +${earned} Nature XP!`);
     } catch (e) {
       console.error("Pocket complete error:", e);
     }
@@ -680,7 +795,8 @@ async function sendEncounterTurn(userInput) {
         category: currentCategory,
         user_input: userInput,
         turn: encounterState.turn,
-        target_id: encounterState.target_id
+        target_id: encounterState.target_id,
+        photo_path: currentSightingPhoto
       })
     });
     const data = await res.json();
@@ -692,10 +808,9 @@ async function sendEncounterTurn(userInput) {
       const promptText = document.getElementById("encounter-prompt-text");
       if (promptText) promptText.textContent = data.diagnostic_prompt;
 
-      if (data.audio_url && narratorAudio) {
-        narratorAudio.src = data.audio_url;
-        narratorAudio.play().catch(() => {});
-      }
+      const speechText = document.getElementById("investigating-speech-text");
+      if (speechText) speechText.textContent = `"${data.naturalist_speech || data.diagnostic_prompt}"`;
+      window.playNaturalistSpeech(data.naturalist_speech || data.diagnostic_prompt, data.audio_url, "investigating");
 
       if (choicesContainer) {
         choicesContainer.innerHTML = "";
@@ -709,7 +824,7 @@ async function sendEncounterTurn(userInput) {
         });
       }
     } else if (data.phase === "caught") {
-      // Pokemon Go GOTCHA catch reveal!
+      // Verified Sighting Reveal Card
       const investigating = document.getElementById("encounter-investigating");
       const caught = document.getElementById("encounter-caught");
       if (investigating) investigating.style.display = "none";
@@ -744,19 +859,37 @@ async function sendEncounterTurn(userInput) {
         };
       }
 
+      // Display Photo Assurance Proof if attached
+      const photoWrap = document.getElementById("caught-photo-assurance-wrap");
+      const photoImg = document.getElementById("caught-photo-assurance-img");
+      const xpBadge = document.getElementById("caught-xp-badge");
+      if (data.photo_path || currentSightingPhoto) {
+        if (photoWrap) photoWrap.style.display = "flex";
+        if (photoImg) photoImg.src = data.photo_path || currentSightingPhoto;
+        if (xpBadge) xpBadge.textContent = "+75 Nature XP (Photo Verified)";
+      } else {
+        if (photoWrap) photoWrap.style.display = "none";
+        if (xpBadge) xpBadge.textContent = "+50 Nature XP";
+      }
+
+      // Interactive Naturalist Speech on Catch Reveal
+      const speechText = document.getElementById("caught-speech-text");
+      if (speechText) speechText.textContent = `"${data.naturalist_speech || 'Specimen verified and logged to your Field Journal!'}"`;
+      window.playNaturalistSpeech(data.naturalist_speech, data.audio_url, "caught");
+
       const outdoorNote = document.getElementById("caught-outdoor-note");
       if (outdoorNote) {
         const typeStr = currentCategory === "trees" ? "tree" : "bird";
-        outdoorNote.textContent = `🌿 Now put your phone away and touch grass! Observe this ${typeStr} for 30 seconds.`;
+        outdoorNote.textContent = `Put your phone away and touch grass! Observe this ${typeStr} for 30 seconds.`;
       }
 
-      // Real Bird Call Audio playback on Catch Screen
+      // Bird Call Audio playback on Catch Screen
       const caughtAudioContainer = document.getElementById("caught-audio-container");
       const caughtBirdCallBtn = document.getElementById("caught-bird-call-btn");
       if (sp.audio_url && currentCategory === "birds") {
         if (caughtAudioContainer) caughtAudioContainer.style.display = "block";
         if (caughtBirdCallBtn) {
-          caughtBirdCallBtn.innerHTML = "🎵 Hear Bird Call / Song";
+          caughtBirdCallBtn.innerHTML = "Hear Specimen Call";
           caughtBirdCallBtn.onclick = () => window.playBirdCall(sp.audio_url, caughtBirdCallBtn);
         }
       } else {
@@ -787,23 +920,23 @@ window.playBirdCall = function(audioUrl, btnElement) {
     audioEl.pause();
     if (btnElement) {
       btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
-        ? "🎵 Hear Bird Call / Song"
-        : "🎵 Hear Call";
+        ? "Hear Bird Call / Song"
+        : "Hear Call";
     }
     return;
   }
 
   // Reset all other audio buttons to play state
-  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "🎵 Hear Bird Call / Song");
-  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "🎵 Hear Call");
+  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "Hear Bird Call / Song");
+  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "Hear Call");
 
   audioEl.src = audioUrl;
   audioEl.play().then(() => {
     currentBirdAudioUrl = audioUrl;
     if (btnElement) {
       btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
-        ? "⏸️ Pause Bird Call"
-        : "⏸️ Pause Call";
+        ? "Pause Bird Call"
+        : "Pause Call";
     }
   }).catch((err) => {
     console.log("Audio playback error:", err);
@@ -813,8 +946,8 @@ window.playBirdCall = function(audioUrl, btnElement) {
     currentBirdAudioUrl = null;
     if (btnElement) {
       btnElement.innerHTML = btnElement.classList.contains("bird-call-btn")
-        ? "🎵 Hear Bird Call / Song"
-        : "🎵 Hear Call";
+        ? "Hear Bird Call / Song"
+        : "Hear Call";
     }
   };
 };
@@ -851,7 +984,7 @@ async function loadQuests() {
       if (rankEl) rankEl.textContent = rankTitle;
 
       const streakEl = document.getElementById("streak-tag");
-      if (streakEl) streakEl.textContent = `🔥 ${p.streak_days} Day Streak`;
+      if (streakEl) streakEl.textContent = `${p.streak_days} Day Streak`;
 
       const barFill = document.getElementById("xp-bar-fill");
       if (barFill) barFill.style.width = `${p.progress_pct}%`;
@@ -874,7 +1007,7 @@ async function loadQuests() {
           const desc = currentLang === "en" ? q.desc : q.desc_ta;
           item.innerHTML = `
             <div class="quest-left">
-              <span style="font-size: 1.1rem;">${q.icon}</span>
+              <span class="quest-indicator-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background: ${q.completed ? 'var(--accent)' : 'rgba(255,255,255,0.25)'}; margin-top: 6px;"></span>
               <div>
                 <div class="quest-title">${title} ${q.completed ? "✓" : ""}</div>
                 <div class="quest-desc">${desc}</div>
@@ -914,32 +1047,32 @@ function updateCategoryUI() {
     if (presetsWrap) {
       presetsWrap.innerHTML = `
         <button type="button" class="preset-chip" onclick="setPreset('A sacred peepal tree with fluttering heart-shaped leaves with long tail tips and pale grey bark')">
-          💚 Heart leaves & drip tip
+          Heart leaves & drip tip
         </button>
         <button type="button" class="preset-chip" onclick="setPreset('A roadside neem tree with feathery serrated compound leaves and bitter medicinal smell')">
-          🌿 Feathery leaves & bitter smell
+          Feathery leaves & bitter smell
         </button>
         <button type="button" class="preset-chip" onclick="setPreset('A golden shower tree with cascading bright yellow flowers and long dark brown hanging pods')">
-          🌺 Golden shower cascades
+          Golden shower cascades
         </button>
         <button type="button" class="preset-chip" onclick="setPreset('A massive banyan tree with thick aerial prop roots hanging down from branches to the ground')">
-          🌳 Aerial roots to ground
+          Aerial roots to ground
         </button>
       `;
     }
     if (voiceMatchBtn) {
-      voiceMatchBtn.innerHTML = `<span>🔍 Find Tree →</span>`;
+      voiceMatchBtn.innerHTML = `<span>Find Tree →</span>`;
     }
     if (micStatus) {
-      micStatus.textContent = currentLang === "en" ? "🎙️ Tap Speak or type your tree observation" : "🎙️ குரலில் அல்லது தட்டச்சு செய்து மரத்தை விவரிக்கவும்";
+      micStatus.textContent = currentLang === "en" ? "Tap Speak or type your tree observation" : "குரலில் அல்லது தட்டச்சு செய்து மரத்தை விவரிக்கவும்";
     }
     if (stepTapLabel) {
       stepTapLabel.textContent = currentLang === "en"
-        ? "👁️ Prefer 7 step-by-step tree questions? Tap here →"
-        : "👁️ 7 படிநிலைகளில் மரத்தை அடையாளம் காண தட்டவும் →";
+        ? "Prefer 7 step-by-step tree questions? Tap here →"
+        : "7 படிநிலைகளில் மரத்தை அடையாளம் காண தட்டவும் →";
     }
     if (encounterLookUpText) encounterLookUpText.textContent = "LOOK UP AT THE LIVING TREE";
-    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "🌳";
+    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "";
   } else {
     // Birds
     if (spokenInput) {
@@ -953,29 +1086,29 @@ function updateCategoryUI() {
     if (presetsWrap) {
       presetsWrap.innerHTML = `
         <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
-          🐦 Crest & red vent
+          Crest & red vent
         </button>
         <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
-          🐤 Yellow bill & eye patch
+          Yellow bill & eye patch
         </button>
         <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
-          🦅 Forked tail on wire
+          Forked tail on wire
         </button>
       `;
     }
     if (voiceMatchBtn) {
-      voiceMatchBtn.innerHTML = `<span>🔍 Find Creature →</span>`;
+      voiceMatchBtn.innerHTML = `<span>Find Creature →</span>`;
     }
     if (micStatus) {
-      micStatus.textContent = currentLang === "en" ? "🎙️ Tap Speak or type your bird sighting" : "🎙️ குரலில் அல்லது தட்டச்சு செய்து பறவையை விவரிக்கவும்";
+      micStatus.textContent = currentLang === "en" ? "Tap Speak or type your bird sighting" : "குரலில் அல்லது தட்டச்சு செய்து பறவையை விவரிக்கவும்";
     }
     if (stepTapLabel) {
       stepTapLabel.textContent = currentLang === "en"
-        ? "👁️ Prefer 5 step-by-step diagnostic questions? Tap here →"
-        : "👁️ 5 படிநிலைகளில் பறவையை அடையாளம் காண தட்டவும் →";
+        ? "Prefer 5 step-by-step diagnostic questions? Tap here →"
+        : "5 படிநிலைகளில் பறவையை அடையாளம் காண தட்டவும் →";
     }
     if (encounterLookUpText) encounterLookUpText.textContent = "LOOK UP AT THE CREATURE";
-    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "👁️";
+    if (encounterLookUpIcon) encounterLookUpIcon.textContent = "";
   }
 }
 
@@ -1077,7 +1210,6 @@ function renderCurrentQuestion() {
       btn.className = `option-btn ${isSelected ? "selected" : ""}`;
       btn.innerHTML = `
         <div class="option-content-left">
-          ${opt.emoji ? `<span class="option-emoji">${opt.emoji}</span>` : ""}
           <div class="option-labels">
             <span class="option-label-en">${currentLang === "en" ? opt.label_en : opt.label_ta}</span>
             <span class="option-label-ta">${currentLang === "en" ? opt.label_ta : opt.label_en}</span>
@@ -1244,15 +1376,15 @@ function renderResultsScreen(data) {
     traitsCard.style.marginBottom = "14px";
     traitsCard.innerHTML = `
       <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 6px;">
-        🔍 EXTRACTED FIELD WORDS & TRAITS
+        EXTRACTED FIELD WORDS & TRAITS
       </div>
       <div style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">
         <strong>Observed:</strong> "${et.raw_text}"
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.82rem;">
-        <span class="badge" style="background: rgba(132, 204, 22, 0.2); color: #a3e635;">🎨 Colors: ${et.detected_colors.join(", ")}</span>
-        <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">👑 Features: ${et.detected_features.join(", ")}</span>
-        <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">🔑 Keywords: ${et.keywords.join(", ")}</span>
+        <span class="badge" style="background: rgba(132, 204, 22, 0.2); color: #a3e635;">Colors: ${et.detected_colors.join(", ")}</span>
+        <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Features: ${et.detected_features.join(", ")}</span>
+        <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Keywords: ${et.keywords.join(", ")}</span>
       </div>
     `;
     container.appendChild(traitsCard);
@@ -1265,8 +1397,8 @@ function renderResultsScreen(data) {
     audioBanner.style.padding = "14px";
     audioBanner.style.marginBottom = "14px";
     audioBanner.innerHTML = `
-      <button type="button" class="start-btn" style="padding: 10px; font-size: 0.95rem;" onclick="document.getElementById('narrator-audio').play()">
-        🔊 Replay Naturalist Guide Voice
+      <button type="button" class="start-btn" style="padding: 10px; font-size: 0.95rem;" onclick="window.playNaturalistSpeech(null, '${data.audio_url}')">
+        Replay Naturalist Guide Voice
       </button>
     `;
     container.appendChild(audioBanner);
@@ -1275,7 +1407,7 @@ function renderResultsScreen(data) {
   // AI Engine Evaluation Badge
   const engineBanner = document.createElement("div");
   engineBanner.style.cssText = "font-size: 0.8rem; color: var(--accent); margin-bottom: 12px; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 6px;";
-  engineBanner.innerHTML = `<span>🧠 ENGINE:</span> <span style="color: var(--text-main); font-weight: 600;">${data.engine_used || 'Gemma 2 9B (Open-Weight)'}</span> · <span style="color: #60a5fa;">🎙️ ElevenLabs Turbo</span>`;
+  engineBanner.innerHTML = `<span>ENGINE:</span> <span style="color: var(--text-main); font-weight: 600;">${data.engine_used || 'Gemma 2 9B (Open-Weight)'}</span> · <span style="color: #60a5fa;">ElevenLabs Turbo</span>`;
   container.appendChild(engineBanner);
 
   candidates.forEach((cand) => {
@@ -1291,7 +1423,7 @@ function renderResultsScreen(data) {
     const audioButtonHtml = cand.audio_url ? `
       <div style="margin-top: 6px;">
         <button type="button" class="card-audio-btn" onclick="window.playBirdCall('${cand.audio_url}', this); event.stopPropagation();">
-          🎵 Hear Call
+          Hear Call
         </button>
       </div>` : "";
 
@@ -1324,7 +1456,7 @@ window.unlockSpecies = async function(speciesId) {
     const res = await fetch("/api/collection/unlock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ species_id: speciesId })
+      body: JSON.stringify({ species_id: speciesId, photo_path: currentSightingPhoto })
     });
     const data = await res.json();
     if (data.success && data.species) {
@@ -1358,18 +1490,16 @@ window.unlockSpecies = async function(speciesId) {
       if (sp.audio_url && currentCategory === "birds") {
         if (modalAudioContainer) modalAudioContainer.style.display = "block";
         if (modalBirdCallBtn) {
-          modalBirdCallBtn.innerHTML = "🎵 Hear Bird Call / Song";
+          modalBirdCallBtn.innerHTML = "Hear Bird Call / Song";
           modalBirdCallBtn.onclick = () => window.playBirdCall(sp.audio_url, modalBirdCallBtn);
         }
       } else {
         if (modalAudioContainer) modalAudioContainer.style.display = "none";
       }
 
-      // Play ElevenLabs celebration audio
-      if (data.audio_url && narratorAudio) {
-        narratorAudio.src = data.audio_url;
-        narratorAudio.play().catch(() => {});
-      }
+      // Play Naturalist celebration speech
+      const celebrationSpeech = `${sp.common_name} verified and logged! ${sp.local_fact || sp.summary || ''}`;
+      window.playNaturalistSpeech(celebrationSpeech, data.audio_url);
 
       if (modal) modal.style.display = "flex";
       loadStats();
@@ -1406,13 +1536,13 @@ async function loadJournal(filter = "all") {
     if (statSpecial) statSpecial.textContent = `${data.stats_by_rarity['Special find'].unlocked}/${data.stats_by_rarity['Special find'].total}`;
 
     // Update filter buttons count
-    const allFilterBtn = document.querySelector(".journal-filters [data-filter='all']");
-    const unlockedFilterBtn = document.querySelector(".journal-filters [data-filter='unlocked']");
-    const lockedFilterBtn = document.querySelector(".journal-filters [data-filter='locked']");
+    const allFilterBtn = document.querySelector(".filter-tabs [data-filter='all']");
+    const unlockedFilterBtn = document.querySelector(".filter-tabs [data-filter='unlocked']");
+    const lockedFilterBtn = document.querySelector(".filter-tabs [data-filter='locked']");
 
     if (allFilterBtn) allFilterBtn.textContent = `All (${data.total_species})`;
-    if (unlockedFilterBtn) unlockedFilterBtn.textContent = `Discovered ✨ (${data.unlocked_count})`;
-    if (lockedFilterBtn) lockedFilterBtn.textContent = `Yet to Find 🔍 (${data.total_species - data.unlocked_count})`;
+    if (unlockedFilterBtn) unlockedFilterBtn.textContent = `Discovered (${data.unlocked_count})`;
+    if (lockedFilterBtn) lockedFilterBtn.textContent = `Yet to Find (${data.total_species - data.unlocked_count})`;
 
     renderDeckCards(filter);
   } catch (err) {
@@ -1433,7 +1563,7 @@ function renderDeckCards(filter) {
   }
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="hero-card" style="grid-column: 1 / -1;"><p style="color: var(--text-muted);">No species in this tab yet. Explore outdoors and describe what you see!</p></div>`;
+    grid.innerHTML = `<div class="encounter-surface" style="grid-column: 1 / -1;"><p style="color: var(--text-muted);">No species in this tab yet. Explore outdoors and describe what you see!</p></div>`;
     return;
   }
 
@@ -1445,21 +1575,29 @@ function renderDeckCards(filter) {
     if (sp.is_unlocked) {
       card.className = "journal-card";
       const tamil = sp.tamil_name ? `<div class="journal-card-tamil">${sp.tamil_name}</div>` : "";
+      const userPhotoHtml = sp.user_photo ? `
+        <div class="user-photo-thumb-row">
+          <img class="user-photo-thumb-img" src="${sp.user_photo}" alt="Sighting photo evidence">
+          <span class="user-photo-thumb-tag">Verified Photo Proof</span>
+        </div>
+      ` : "";
+
       card.innerHTML = `
         <div class="journal-card-media">
-          <img class="journal-card-img" src="${sp.image_local_path || '/static/images/fallback.jpg'}" alt="${sp.common_name}" onerror="this.src='/static/images/fallback.jpg'">
+          <img class="journal-card-img" src="${sp.image_local_path || sp.image_url || '/static/images/fallback.jpg'}" alt="${sp.common_name}" onerror="this.src='/static/images/fallback.jpg'">
           <span class="badge ${badgeClass}" style="position: absolute; top: 8px; right: 8px;">${sp.rarity}</span>
-          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); color: #86efac;">✓ Discovered</span>
+          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.8); color: #34d399;">Verified Sighting</span>
         </div>
         <div class="journal-card-body">
           <div class="journal-card-title">${sp.common_name}</div>
           ${tamil}
           <div class="journal-card-sci">${sp.scientific_name}</div>
           <div class="journal-card-fact">${sp.local_fact || (sp.summary ? sp.summary.slice(0, 90) + '...' : '')}</div>
+          ${userPhotoHtml}
           ${sp.audio_url ? `
             <div style="margin-top: 8px;">
               <button type="button" class="card-audio-btn" onclick="window.playBirdCall('${sp.audio_url}', this); event.stopPropagation();">
-                🎵 Hear Call
+                Hear Specimen Call
               </button>
             </div>
           ` : ''}
@@ -1467,18 +1605,17 @@ function renderDeckCards(filter) {
       `;
     } else {
       card.className = "journal-card locked";
-      const categoryIcon = currentCategory === "birds" ? "🐦" : "🌳";
       card.innerHTML = `
-        <div class="journal-card-media">
-          <span class="locked-silhouette-icon">${categoryIcon}</span>
+        <div class="journal-card-media" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);">
           <span class="badge ${badgeClass}" style="position: absolute; top: 8px; right: 8px;">${sp.rarity}</span>
-          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); color: #94a3b8;">🔒 Undiscovered</span>
+          <span class="badge" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.8); color: #94a3b8;">Unlogged</span>
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Undiscovered</span>
         </div>
         <div class="journal-card-body">
           <div class="journal-card-title">${sp.common_name}</div>
           <div class="journal-card-sci">${sp.scientific_name}</div>
-          <div class="locked-hint-box">
-            🔍 <strong>Field Clue:</strong> Look around local Coimbatore trees and waterbodies. ${sp.rarity === 'Special find' ? 'Special find in this region.' : 'Active resident.'}
+          <div class="locked-hint-box" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 6px;">
+            <strong>Field Clue:</strong> Look around local Coimbatore trees and wetlands. ${sp.rarity === 'Special find' ? 'Special find in this region.' : 'Active resident.'}
           </div>
         </div>
       `;
@@ -1520,8 +1657,8 @@ function resetToHome() {
     birdAudio.currentTime = 0;
   }
   currentBirdAudioUrl = null;
-  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "🎵 Hear Bird Call / Song");
-  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "🎵 Hear Call");
+  document.querySelectorAll(".bird-call-btn").forEach(b => b.innerHTML = "Hear Bird Call / Song");
+  document.querySelectorAll(".card-audio-btn").forEach(b => b.innerHTML = "Hear Call");
 
   // Stop recording if active
   if (isRecording) {

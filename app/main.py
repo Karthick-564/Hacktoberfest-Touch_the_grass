@@ -141,20 +141,57 @@ class EncounterPayload(BaseModel):
     user_input: str
     turn: int = 1
     target_id: Optional[int] = None
+    photo_path: Optional[str] = None
 
 @app.post("/api/encounter/turn")
 async def encounter_turn_endpoint(payload: EncounterPayload):
     """
-    Pokemon Go style wild nature encounter.
-    Drives 2-way detective dialogue forcing user to look up at the real creature.
+    Wild nature encounter with interactive speech and photo assurance.
     """
     result = evaluate_encounter_turn(
         category=payload.category,
         user_input=payload.user_input,
         turn=payload.turn,
-        target_id=payload.target_id
+        target_id=payload.target_id,
+        photo_path=payload.photo_path
     )
     return result
+
+class PhotoUploadPayload(BaseModel):
+    image_base64: str
+    filename: Optional[str] = "sighting.jpg"
+
+@app.post("/api/upload_photo")
+async def upload_photo_endpoint(payload: PhotoUploadPayload):
+    """
+    Saves verified sighting photo to /static/uploads for field assurance.
+    """
+    import base64
+    import time
+    import uuid
+    from pathlib import Path
+
+    upload_dir = Path(__file__).resolve().parent / "static" / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = payload.image_base64
+    if "," in raw:
+        raw = raw.split(",", 1)[1]
+
+    try:
+        data = base64.b64decode(raw)
+        file_id = f"sighting_{int(time.time())}_{uuid.uuid4().hex[:6]}.jpg"
+        dest = upload_dir / file_id
+        with open(dest, "wb") as f:
+            f.write(data)
+
+        return {
+            "success": True,
+            "photo_url": f"/static/uploads/{file_id}",
+            "message": "Field photo assurance verified and attached."
+        }
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": f"Failed to save photo: {str(e)}"})
 
 class PocketWalkPayload(BaseModel):
     duration_seconds: int = 0
@@ -233,7 +270,7 @@ async def get_daily_quests():
         quests = [
             {
                 "id": "touch_grass",
-                "icon": "🌱",
+                "icon": "daily",
                 "title": "Touch Grass Today",
                 "title_ta": "இன்று இயற்கையை உணருங்கள்",
                 "desc": "Step outside and log 1 wild sighting",
@@ -243,7 +280,7 @@ async def get_daily_quests():
             },
             {
                 "id": "perched_watcher",
-                "icon": "🔭",
+                "icon": "perched",
                 "title": "Perched Watcher",
                 "title_ta": "கிளைக் கண்காணிப்பாளர்",
                 "desc": "Find a bird perched on a branch or wire",
@@ -253,7 +290,7 @@ async def get_daily_quests():
             },
             {
                 "id": "color_hunter",
-                "icon": "🎨",
+                "icon": "color",
                 "title": "Vibrant Plumage",
                 "title_ta": "வண்ண இறகுகள்",
                 "desc": "Observe a bird with yellow or red accents",
@@ -363,27 +400,30 @@ async def match_observation_endpoint(payload: ObservationPayload):
 class UnlockPayload(BaseModel):
     species_id: int
     notes: Optional[str] = ""
+    photo_path: Optional[str] = None
 
 
 @app.post("/api/collection/unlock")
 async def unlock_species_card(payload: UnlockPayload):
     """
-    Unlocks a species card in the user's offline collection.
-    Generates ElevenLabs celebration narration.
+    Unlocks a species card in the user's offline collection with photo assurance.
     """
     conn = get_connection()
     try:
-        # Insert or update collection
+        xp_bonus = 75 if payload.photo_path else 50
         conn.execute(
-            """INSERT INTO user_collection (species_id, notes)
-               VALUES (?, ?)
-               ON CONFLICT(species_id) DO UPDATE SET notes = coalesce(excluded.notes, user_collection.notes)""",
-            (payload.species_id, payload.notes)
+            """INSERT INTO user_collection (species_id, notes, photo_path)
+               VALUES (?, ?, ?)
+               ON CONFLICT(species_id) DO UPDATE SET
+               notes = coalesce(excluded.notes, user_collection.notes),
+               photo_path = coalesce(excluded.photo_path, user_collection.photo_path)""",
+            (payload.species_id, payload.notes, payload.photo_path)
         )
+        conn.execute("UPDATE user_profile SET xp = xp + ? WHERE id = 1", (xp_bonus,))
         conn.commit()
 
         sp = conn.execute(
-            """SELECT s.*, uc.unlocked_at, uc.notes as user_notes
+            """SELECT s.*, uc.unlocked_at, uc.notes as user_notes, uc.photo_path as user_photo
                FROM species s
                JOIN user_collection uc ON s.id = uc.species_id
                WHERE s.id = ?""",
@@ -397,15 +437,18 @@ async def unlock_species_card(payload: UnlockPayload):
     finally:
         conn.close()
 
-    # ElevenLabs voice celebration for card discovery
-    celebration_speech = f"Congratulations! You unlocked the {species_data['common_name']}. {species_data.get('local_fact', '')[:120]}"
+    celebration_speech = (
+        f"Verified! You registered the {species_data['common_name']}. "
+        f"{species_data.get('local_fact', '')[:120]}"
+    )
     audio_url = generate_speech(celebration_speech)
 
     return {
         "success": True,
         "species": species_data,
         "audio_url": audio_url,
-        "message": f"Successfully unlocked {species_data['common_name']} in your Field Journal!"
+        "has_photo_assurance": bool(payload.photo_path),
+        "message": f"Successfully registered {species_data['common_name']} in your Field Journal!"
     }
 
 
@@ -419,9 +462,9 @@ async def get_user_collection(category: str = "birds"):
         rows = conn.execute(
             """SELECT s.id, s.scientific_name, s.common_name, s.tamil_name, s.rarity,
                       s.summary, s.description_text, s.key_traits, s.local_fact,
-                      s.image_local_path, s.peak_months, s.audio_url,
+                      s.image_local_path, s.image_url, s.peak_months, s.audio_url,
                       CASE WHEN uc.id IS NOT NULL THEN 1 ELSE 0 END as is_unlocked,
-                      uc.unlocked_at, uc.notes as user_notes
+                      uc.unlocked_at, uc.notes as user_notes, uc.photo_path as user_photo
                FROM species s
                LEFT JOIN user_collection uc ON s.id = uc.species_id
                WHERE s.category = ?

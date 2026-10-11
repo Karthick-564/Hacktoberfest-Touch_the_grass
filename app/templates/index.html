@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#f6f8f6">
-  <meta name="description" content="Field Guide - Voice-first offline nature guide for Hacktoberfest Touch Grass Challenge.">
+  <meta name="theme-color" content="#0e1613">
+  <meta name="description" content="Field Guide - Voice-first offline nature companion with photo assurance for Hacktoberfest Touch Grass Challenge.">
   <title>Field Guide | கள வழிகாட்டி</title>
   <script>
     if ('serviceWorker' in navigator) {
@@ -13,7 +13,7 @@
       });
     }
   </script>
-  <link rel="stylesheet" href="/static/css/style.css?v=15">
+  <link rel="stylesheet" href="/static/css/style.css?v=16">
 </head>
 <body>
   <!-- Left Sidebar Drawer (Tasks & Explorer Hub) -->
@@ -21,51 +21,33 @@
     <aside id="sidebar-drawer" class="sidebar-drawer" role="dialog" aria-modal="true" aria-label="Tasks and Explorer Hub">
       <!-- Top Header with Close Button -->
       <div class="sidebar-top">
-        <div class="sidebar-brand">
-          <span class="sidebar-brand-icon">🌿</span>
-          <div>
-            <div class="sidebar-brand-title">Tasks & Missions</div>
-            <div class="sidebar-brand-sub">Coimbatore Field Guide</div>
-          </div>
-        </div>
+        <div class="sidebar-brand-title">Tasks & Expeditions</div>
         <button type="button" id="sidebar-close-btn" class="sidebar-close-btn" title="Close tasks sidebar" aria-label="Close sidebar">✕</button>
       </div>
 
       <div class="sidebar-content">
         <!-- 1. Tasks / Missions Section -->
         <div class="sidebar-section">
-          <div class="sidebar-section-header">
-            <span class="section-title">🎯 TODAY'S FIELD TASKS</span>
-            <span class="section-badge" id="tasks-counter">Coimbatore</span>
-          </div>
+          <div class="section-title">Today's Field Tasks</div>
           <div id="quests-list" class="quests-list">
             <div class="quest-item" id="quest-touch-grass">
-              <div class="quest-left">
-                <span style="font-size: 1.1rem;">🌱</span>
-                <div>
-                  <div class="quest-title">Touch Grass Today</div>
-                  <div class="quest-desc">Step outside & log 1 wild sighting</div>
-                </div>
+              <div>
+                <div class="quest-title">Touch Grass Today</div>
+                <div class="quest-desc">Step outside and log 1 wild sighting</div>
               </div>
               <span class="quest-reward">+50 XP</span>
             </div>
             <div class="quest-item" id="quest-perched">
-              <div class="quest-left">
-                <span style="font-size: 1.1rem;">🔭</span>
-                <div>
-                  <div class="quest-title">Perched Watcher</div>
-                  <div class="quest-desc">Find a bird sitting on branch or wire</div>
-                </div>
+              <div>
+                <div class="quest-title">Perched Watcher</div>
+                <div class="quest-desc">Find a specimen perched on a branch or wire</div>
               </div>
               <span class="quest-reward">+50 XP</span>
             </div>
             <div class="quest-item" id="quest-color">
-              <div class="quest-left">
-                <span style="font-size: 1.1rem;">🎨</span>
-                <div>
-                  <div class="quest-title">Vibrant Plumage</div>
-                  <div class="quest-desc">Spot a creature with yellow or red marks</div>
-                </div>
+              <div>
+                <div class="quest-title">Vibrant Markings</div>
+                <div class="quest-desc">Spot a creature with yellow or red marks</div>
               </div>
               <span class="quest-reward">+50 XP</span>
             </div>
@@ -74,17 +56,9 @@
 
         <!-- 2. Explorer Level & XP Progress Section -->
         <div class="sidebar-section">
-          <div class="sidebar-section-header">
-            <span class="section-title">⭐ EXPLORER PROGRESS</span>
-            <div class="streak-tag" id="streak-tag">🔥 1 Day Streak</div>
-          </div>
+          <div class="section-title">Naturalist Level</div>
           <div class="profile-card">
-            <div class="profile-header">
-              <div class="rank-badge">
-                <span id="rank-icon">🌱</span>
-                <span id="rank-title">Level 1 · Seedling Scout</span>
-              </div>
-            </div>
+            <div style="font-size: 0.88rem; font-weight: 800; color: #34d399; margin-bottom: 4px;" id="rank-title">Level 1 · Field Scout</div>
             <div class="xp-bar-bg">
               <div id="xp-bar-fill" class="xp-bar-fill" style="width: 0%;"></div>
             </div>
@@ -97,28 +71,22 @@
 
         <!-- 3. Quick Field Navigation -->
         <div class="sidebar-section">
-          <div class="sidebar-section-header">
-            <span class="section-title">🧭 FIELD EXPLORER</span>
-          </div>
+          <div class="section-title">Field Modules</div>
           <div class="sidebar-nav-list">
             <button type="button" class="sidebar-nav-btn" id="sidebar-journal-link">
-              <span>📖 View Field Journal (80 Species)</span>
-              <span class="nav-arrow">→</span>
+              <span>Field Journal (Catalog)</span>
+              <span>→</span>
             </button>
             <button type="button" class="sidebar-nav-btn" id="sidebar-steptap-link">
-              <span>👁️ 5-Question Step Identifier</span>
-              <span class="nav-arrow">→</span>
+              <span>5-Step Diagnostic Mode</span>
+              <span>→</span>
             </button>
             <button type="button" class="sidebar-nav-btn" id="sidebar-pocket-link">
-              <span>🚶 Pocket Walk Mode (Touch Grass Timer)</span>
-              <span class="nav-arrow">→</span>
+              <span>Trail Walk Mode (Screen Off)</span>
+              <span>→</span>
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <span>🌿 Hacktoberfest Touch Grass · Offline Ready</span>
       </div>
     </aside>
   </div>
@@ -127,142 +95,178 @@
     <!-- Top Header -->
     <header class="app-header">
       <div class="header-left">
-        <button type="button" id="sidebar-open-btn" class="sidebar-open-btn" title="Open tasks sidebar" aria-label="Open tasks">
-          <span class="hamburger-icon">☰</span>
-          <span class="tasks-pill-badge">Tasks</span>
+        <button type="button" id="sidebar-open-btn" class="sidebar-open-btn" title="Open tasks menu" aria-label="Open tasks">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          <span>Tasks</span>
         </button>
         <div class="logo-area" id="home-link" title="Home">
-          <span class="logo-emoji">🌿</span>
           <span class="app-title">Field Guide</span>
         </div>
       </div>
       <div class="header-right">
-        <button type="button" id="pocket-mode-btn" class="pocket-mode-pill-btn" title="Touch Grass Walk Mode">
-          🚶 Walk
+        <button type="button" id="pocket-mode-btn" class="pocket-mode-pill-btn" title="Trail Walk Timer">
+          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Walk</span>
         </button>
-        <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Open Field Journal">
-          📖 <span id="journal-btn-count">0/80</span>
+        <button type="button" id="journal-nav-btn" class="journal-nav-btn" title="Field Journal">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span id="journal-btn-count">0/80</span>
         </button>
         <button type="button" id="lang-toggle-btn" class="lang-toggle-btn">தமிழ்</button>
       </div>
     </header>
 
-    <!-- 1. Clean, User-Friendly Home View (No Stacked Box Clutter) -->
+    <!-- 1. Main Observation & Sighting Home View -->
     <main id="home-view" class="view-screen active">
-      <!-- Friendly Greeting Banner (Airy, clean typography) -->
       <div class="home-greeting">
-        <div class="greeting-badge"><span>🌾</span> <span>TOUCH GRASS · COIMBATORE</span></div>
-        <h1 class="greeting-title">Spot a creature outside?</h1>
-        <p class="greeting-sub">Speak or type what you see. We'll identify it together.</p>
+        <div class="greeting-badge">TOUCH GRASS · FIELD RECORDER</div>
+        <h1 class="greeting-title">Identify Wild Species</h1>
+        <p class="greeting-sub">Describe or photograph what you see. We'll identify it together.</p>
       </div>
 
-      <!-- Category Pill Switcher -->
+      <!-- Segmented Category Switcher -->
       <div class="category-tabs" id="category-tabs">
         <button type="button" class="category-tab-btn selected" data-cat="birds">
-          <span>🐦 Birds (80)</span>
+          <span>Birds (80)</span>
         </button>
         <button type="button" class="category-tab-btn" data-cat="trees">
-          <span>🌳 Trees (25)</span>
+          <span>Trees (25)</span>
         </button>
       </div>
 
-      <!-- Single Elegant Encounter Surface -->
+      <!-- Observation Surface -->
       <div class="encounter-surface">
         <div class="encounter-surface-header">
-          <span class="encounter-badge">🔍 AI NATURE DETECTIVE</span>
-          <span class="encounter-sub-badge" id="stats-display">80 Coimbatore Species</span>
+          <span class="encounter-badge">Species Identification</span>
+          <span class="encounter-sub-badge" id="stats-display">80 Regional Records</span>
         </div>
 
         <div class="input-wrap">
           <textarea id="spoken-input" class="free-text-input" rows="3" placeholder="Describe what you see outdoors... e.g. A black bird with a red crest on its head in a neem tree"></textarea>
           
-          <!-- Live Audio Volume Line -->
           <div id="volume-meter-box" class="volume-meter">
             <div id="volume-fill" class="volume-meter-fill"></div>
           </div>
-          <div id="mic-status" class="mic-status-text">🎙️ Tap Speak or type your sighting</div>
+          <div id="mic-status" class="mic-status-text">Tap Voice Input or type your observation</div>
         </div>
 
-        <!-- Balanced Actions Row -->
+        <!-- Photo Assurance (Camera Capture / Sighting Evidence) -->
+        <div id="photo-assurance-bar" class="photo-assurance-bar">
+          <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+          <div id="photo-empty-state" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="font-size: 0.76rem; color: var(--text-muted);">
+              <strong>Photo Assurance:</strong> Snap photo to verify sighting (+25 XP)
+            </div>
+            <button type="button" id="camera-trigger-btn" class="photo-btn">
+              <svg class="icon-svg" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              <span>Add Photo</span>
+            </button>
+          </div>
+          <div id="photo-preview-box" class="photo-preview-box" style="display: none; width: 100%; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img id="photo-preview-img" class="photo-thumb" src="" alt="Sighting photo">
+              <div>
+                <div class="photo-badge-label">Photo Evidence Attached</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">Ready for verified card unlock</div>
+              </div>
+            </div>
+            <button type="button" id="remove-photo-btn" class="remove-photo-btn">Remove</button>
+          </div>
+        </div>
+
+        <!-- Action Row -->
         <div class="actions-row">
           <button type="button" id="mic-btn" class="mic-toggle-btn" title="Speak observation">
-            <span class="mic-icon">🎙️</span>
-            <span id="mic-btn-label">Speak Sighting</span>
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            <span id="mic-btn-label">Voice Input</span>
           </button>
           <button type="button" id="voice-match-btn" class="start-btn">
-            <span>🔍 Find Creature →</span>
+            <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Identify Specimen</span>
           </button>
         </div>
 
-        <!-- Sample Observation Chips -->
+        <!-- Presets -->
         <div class="presets-section">
-          <div class="presets-label" id="presets-label">Try an example sighting:</div>
+          <div class="presets-label" id="presets-label">Common Local Sightings:</div>
           <div class="presets-wrap" id="presets-wrap">
             <button type="button" class="preset-chip" onclick="setPreset('A black bird with a crest on its head and red under the tail near a bush')">
-              🐦 Crest & red vent
+              Crest & red vent
             </button>
             <button type="button" class="preset-chip" onclick="setPreset('A brown bird with a black hooded head, yellow bill and bare yellow patch behind the eye')">
-              🐤 Yellow bill & eye patch
+              Yellow bill & eye patch
             </button>
             <button type="button" class="preset-chip" onclick="setPreset('A glossy black bird with a deeply forked fish tail perched on a wire')">
-              🦅 Forked tail on wire
+              Forked tail on wire
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Subtle Step-by-Step Taps Alternative Link -->
       <div class="alt-link-row">
         <button type="button" id="start-observation-btn" class="text-link-btn">
-          <span id="step-tap-label">👁️ Prefer step-by-step diagnostic questions? Tap here →</span>
+          <span id="step-tap-label">Prefer 5-step diagnostic questions? Tap here →</span>
         </button>
       </div>
 
       <div class="outdoor-note">
-        🌱 Keep screen time short. Look up at real nature.
+        Touch grass: observe real nature outdoors with your own eyes.
       </div>
     </main>
 
-    <!-- Hidden audio element for ElevenLabs narrator -->
+    <!-- Audio Elements -->
     <audio id="narrator-audio" preload="auto"></audio>
-    <!-- Audio element for genuine bird calls -->
     <audio id="bird-call-audio" preload="none"></audio>
 
-    <!-- 1B. Pokemon Go Wild Encounter View -->
+    <!-- 1B. Wild Sighting / Verification Encounter View -->
     <main id="encounter-view" class="view-screen">
       <div class="encounter-screen-card">
         <div class="encounter-top-bar">
           <button type="button" id="encounter-top-back-btn" class="subtle-back-pill" title="Back to Home">
             ← Back
           </button>
-          <div class="encounter-radar-slim">📡</div>
+          <div style="font-size: 0.74rem; font-weight: 700; color: #34d399; text-transform: uppercase;">Field Detective Mode</div>
         </div>
 
-        <!-- Phase A: Investigating (2-way Detective Dialogue) -->
+        <!-- Phase A: Investigating (Dialogue & Diagnostic Question) -->
         <div id="encounter-investigating">
-          <div class="look-up-pill">
-            <span id="encounter-look-up-icon">👁️</span> <span id="encounter-look-up-text">LOOK UP AT THE CREATURE</span>
+          <!-- Interactive Naturalist Speech Card -->
+          <div id="investigating-speech-panel" class="interactive-speech-panel">
+            <div class="speech-header-row">
+              <span class="speech-title">Naturalist Audio Guide</span>
+              <div id="speech-wave-investigating" class="sound-wave">
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+              </div>
+            </div>
+            <div id="investigating-speech-text" class="speech-text">
+              "Analyzing your field notes against regional biodiversity records..."
+            </div>
+            <button type="button" class="replay-audio-btn" onclick="window.replayLastSpeech()">
+              <svg class="icon-svg" style="width: 12px; height: 12px;" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+              <span>Replay Audio</span>
+            </button>
+          </div>
+
+          <div style="font-size: 0.72rem; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 4px;">
+            Check Physical Specimen
           </div>
           <div id="encounter-prompt-text" class="diagnostic-text">
-            Investigating your field sighting...
+            Investigating your sighting...
           </div>
 
-          <div style="font-size: 0.76rem; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
-            🎙️ AI Naturalist Detective speaking...
+          <div id="encounter-choices" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated via JS -->
           </div>
 
-          <!-- Diagnostic Choices -->
-          <div id="encounter-choices" class="choices-list">
-            <!-- Dynamically populated -->
-          </div>
-
-          <!-- Voice Mic for Answering -->
-          <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; margin-top: 8px;">
-            <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 6px;">Or answer by speaking:</div>
-            <button type="button" id="encounter-mic-btn" class="mic-toggle-btn" style="width: auto; margin: 0 auto; padding: 6px 14px;" title="Speak answer">
-              <span>🎙️ Speak Response</span>
+          <div style="margin-top: 14px; text-align: center;">
+            <button type="button" id="encounter-mic-btn" class="mic-toggle-btn" style="width: 100%;">
+              <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+              <span>Speak Response</span>
             </button>
-            <div id="encounter-mic-status" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Tap to speak</div>
+            <div id="encounter-mic-status" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Tap to speak or select a choice above</div>
           </div>
 
           <button type="button" id="cancel-encounter-btn" class="secondary-btn" style="margin-top: 14px; width: 100%;">
@@ -270,32 +274,61 @@
           </button>
         </div>
 
-        <!-- Phase B: Gotcha Catch Reveal Screen -->
+        <!-- Phase B: Verified Catch Reveal Screen -->
         <div id="encounter-caught" style="display: none;">
-          <div class="gotcha-box">
-            <div class="gotcha-title">🎉 GOTCHA! WILD SPECIES REGISTERED!</div>
-            <div class="xp-pill-green">+50 Nature XP Earned</div>
+          <!-- Interactive Naturalist Speech Card for Discovery -->
+          <div id="caught-speech-panel" class="interactive-speech-panel">
+            <div class="speech-header-row">
+              <span class="speech-title">Species Verified & Logged</span>
+              <div id="speech-wave-caught" class="sound-wave">
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+                <div class="sound-wave-bar"></div>
+              </div>
+            </div>
+            <div id="caught-speech-text" class="speech-text">
+              "Specimen verified! Registered to your Field Journal."
+            </div>
+            <button type="button" class="replay-audio-btn" onclick="window.replayLastSpeech()">
+              <svg class="icon-svg" style="width: 12px; height: 12px;" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+              <span>Replay Audio</span>
+            </button>
           </div>
 
+          <!-- Official Species Card -->
           <div class="revealed-card">
             <img id="caught-img" class="revealed-img" src="/static/images/fallback.jpg" alt="Species" onerror="this.src='/static/images/fallback.jpg'">
             <div class="revealed-body">
-              <span id="caught-rarity" class="badge">Everyday</span>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="caught-rarity" class="badge">Everyday</span>
+                <span id="caught-xp-badge" style="font-size: 0.74rem; font-weight: 800; color: #34d399;">+50 Nature XP</span>
+              </div>
               <div id="caught-common-name" class="revealed-title">Common Name</div>
               <div id="caught-tamil-name" class="revealed-tamil">தமிழ் பெயர்</div>
               <div id="caught-sci-name" class="revealed-sci">Scientific Name</div>
               <div id="caught-fact" class="revealed-fact">Local grounded fact...</div>
+
+              <!-- Photo Assurance Evidence Preview (if attached) -->
+              <div id="caught-photo-assurance-wrap" class="sighting-proof-badge" style="display: none;">
+                <img id="caught-photo-assurance-img" class="sighting-proof-img" src="" alt="User photo evidence">
+                <div>
+                  <div class="sighting-proof-meta">Verified Sighting with Photo Assurance</div>
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">Authentic outdoor evidence logged</div>
+                </div>
+              </div>
             </div>
           </div>
 
           <div id="caught-audio-container" style="display: none; margin: 12px 0 8px;">
-            <button type="button" id="caught-bird-call-btn" class="bird-call-btn">
-              🎵 Hear Bird Call / Song
+            <button type="button" id="caught-bird-call-btn" class="card-audio-btn" style="width: 100%; justify-content: center; padding: 10px;">
+              <svg class="icon-svg" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+              <span>Hear Specimen Call</span>
             </button>
           </div>
 
           <div class="outdoor-note" id="caught-outdoor-note" style="margin-bottom: 14px; font-weight: 600;">
-            🌿 Now put your phone away and touch grass! Observe this creature for 30 seconds.
+            Put your phone away and touch grass! Observe this specimen for 30 seconds.
           </div>
 
           <div class="encounter-actions-grid">
@@ -303,32 +336,30 @@
               + Spot Another
             </button>
             <button type="button" id="caught-view-journal-btn" class="secondary-btn">
-              Open Journal 📖
+              Open Journal
             </button>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- 2. Step-by-Step Question View -->
+    <!-- 2. Step-by-Step Diagnostic View -->
     <main id="question-view" class="view-screen">
       <button type="button" id="question-back-btn" class="view-back-btn">
         ← Back
       </button>
 
-      <div class="step-header">
-        <span id="step-counter">Question 1 of 5</span>
-        <span>Tap to choose</span>
+      <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+        <span id="step-counter">Step 1 of 5</span>
+        <span>Select Feature</span>
       </div>
       <div class="progress-track">
         <div id="progress-fill" class="progress-fill"></div>
       </div>
 
-      <div id="safety-banner" class="safety-banner" style="display: none;"></div>
-
-      <div class="hero-card" style="margin-bottom: 12px;">
-        <div id="question-prompt" class="q-prompt">What do you observe?</div>
-        <div id="question-prompt-sub" class="q-sub">கவனியுங்கள்</div>
+      <div class="encounter-surface" style="margin-bottom: 12px;">
+        <div id="question-prompt" style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">What do you observe?</div>
+        <div id="question-prompt-sub" style="font-size: 0.85rem; color: #34d399;">கவனியுங்கள்</div>
       </div>
 
       <div id="options-container" class="option-list"></div>
@@ -346,18 +377,18 @@
         ← Back to Questions
       </button>
 
-      <div class="hero-card" style="margin-bottom: 12px;">
-        <div class="q-prompt">Review Field Notes</div>
-        <div class="q-sub">குறிப்புகளைச் சரிபார்க்கவும்</div>
+      <div class="encounter-surface" style="margin-bottom: 12px;">
+        <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);">Review Field Notes</div>
+        <div style="font-size: 0.84rem; color: var(--text-muted);">Confirm traits before identification</div>
       </div>
 
-      <div id="summary-items" class="hero-card" style="margin-bottom: 12px;"></div>
+      <div id="summary-items" class="encounter-surface" style="margin-bottom: 12px;"></div>
 
       <button type="button" id="submit-matches-btn" class="start-btn" style="width: 100%;">
         Find Candidate Species
       </button>
-      <button type="button" id="summary-home-btn" class="secondary-btn" style="margin-top: 10px;">
-        ← Cancel & Back to Home
+      <button type="button" id="summary-home-btn" class="secondary-btn" style="margin-top: 10px; width: 100%;">
+        Cancel & Back to Home
       </button>
     </main>
 
@@ -367,14 +398,14 @@
         ← Back to Home
       </button>
 
-      <div class="hero-card" style="margin-bottom: 10px;">
-        <div class="q-prompt">Candidate Matches</div>
-        <div class="q-sub">பொருத்தமான வகைகள்</div>
+      <div class="encounter-surface" style="margin-bottom: 12px;">
+        <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">Candidate Species</div>
+        <div style="font-size: 0.84rem; color: var(--text-muted);">Ranked based on regional Coimbatore occurrences</div>
       </div>
 
       <div id="candidates-container"></div>
 
-      <button type="button" id="new-observation-btn" class="secondary-btn" style="margin-top: 12px;">
+      <button type="button" id="new-observation-btn" class="secondary-btn" style="margin-top: 12px; width: 100%;">
         + Observe Another
       </button>
     </main>
@@ -385,9 +416,9 @@
         ← Back to Observation
       </button>
 
-      <div class="hero-card" style="margin-bottom: 10px;">
-        <div class="q-prompt" id="journal-title">My Field Journal</div>
-        <div class="q-sub" id="journal-sub">களக் குறிப்பேடு · உங்களின் இயற்கை அட்டைகள்</div>
+      <div class="encounter-surface" style="margin-bottom: 12px;">
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);" id="journal-title">My Field Journal</div>
+        <div style="font-size: 0.84rem; color: var(--text-muted);" id="journal-sub">Collectible species deck & verified field records</div>
       </div>
 
       <div class="journal-stats-grid">
@@ -407,13 +438,13 @@
 
       <div class="filter-tabs">
         <button type="button" class="tab-filter-btn active" data-filter="all">All (80)</button>
-        <button type="button" class="tab-filter-btn" data-filter="unlocked">Discovered ✨</button>
-        <button type="button" class="tab-filter-btn" data-filter="locked">Yet to Find 🔍</button>
+        <button type="button" class="tab-filter-btn" data-filter="unlocked">Discovered</button>
+        <button type="button" class="tab-filter-btn" data-filter="locked">Yet to Find</button>
       </div>
 
       <div id="journal-cards-grid" class="journal-grid"></div>
 
-      <button type="button" id="back-from-journal-btn" class="secondary-btn" style="margin-top: 14px;">
+      <button type="button" id="back-from-journal-btn" class="secondary-btn" style="margin-top: 14px; width: 100%;">
         ← Back to Observation
       </button>
     </main>
@@ -422,11 +453,11 @@
   <!-- Card Unlock Modal -->
   <div id="unlock-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
-      <div style="font-size: 0.76rem; font-weight: 800; color: var(--accent); margin-bottom: 8px;">
-        ✨ SPECIES REGISTERED! ✨
+      <div style="font-size: 0.74rem; font-weight: 800; color: #34d399; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 10px;">
+        Specimen Registered to Journal
       </div>
       <div class="revealed-card">
-        <img id="unlock-img" class="revealed-img" src="" alt="Species">
+        <img id="unlock-img" class="revealed-img" src="/static/images/fallback.jpg" alt="Species" onerror="this.src='/static/images/fallback.jpg'">
         <div class="revealed-body">
           <span id="unlock-rarity" class="badge">Everyday</span>
           <div id="unlock-common-name" class="revealed-title">Common Name</div>
@@ -436,30 +467,27 @@
         </div>
       </div>
       <div id="modal-audio-container" style="display: none; margin: 12px 0 8px;">
-        <button type="button" id="modal-bird-call-btn" class="bird-call-btn">
-          🎵 Hear Bird Call / Song
+        <button type="button" id="modal-bird-call-btn" class="card-audio-btn" style="width: 100%; justify-content: center; padding: 10px;">
+          Hear Specimen Call
         </button>
       </div>
       <div style="display: flex; gap: 8px;">
         <button type="button" id="modal-view-journal-btn" class="start-btn" style="flex: 1;">
-          Open Journal 📖
+          Open Journal
         </button>
         <button type="button" id="modal-close-btn" class="secondary-btn" style="flex: 1; margin: 0;">
-          Done ✓
+          Done
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 6. Touch Grass Pocket Mode (Walk & Listen Outdoors) -->
+  <!-- 6. Trail Walk Mode (Screen-off Outdoor Timer) -->
   <div id="pocket-mode-screen" class="pocket-mode-overlay" style="display: none;">
     <div class="pocket-mode-content">
-      <div class="pocket-aura-pulse">
-        <span class="pocket-icon">🌿</span>
-      </div>
-      <div class="pocket-badge">POCKET MODE ACTIVE · TOUCHING GRASS</div>
+      <div class="pocket-badge">TRAIL WALK MODE · TOUCHING GRASS</div>
       <div class="pocket-timer-large" id="pocket-timer">00:00</div>
-      <div class="pocket-subtitle">Put phone in pocket or hold by your side. Look up and enjoy nature.</div>
+      <div class="pocket-subtitle">Put device in pocket or carry by your side. Observe real nature outdoors.</div>
 
       <div class="pocket-stats-card">
         <div class="pocket-stat">
@@ -471,16 +499,16 @@
           <div class="pocket-stat-lbl">Steps Taken</div>
         </div>
         <div class="pocket-stat">
-          <div class="pocket-stat-val" id="pocket-cues-val">🎧 Active</div>
+          <div class="pocket-stat-val" id="pocket-cues-val">Active</div>
           <div class="pocket-stat-lbl">Nature Radar</div>
         </div>
       </div>
 
       <div class="pocket-prompt-card">
-        <span id="pocket-live-prompt">🍃 Listen to the breeze and bird calls around you...</span>
+        <span id="pocket-live-prompt">Listen carefully: how many distinct bird songs can you separate?</span>
       </div>
 
-      <div class="pocket-unlock-wrap">
+      <div style="width: 100%; margin-top: 10px;">
         <button type="button" id="pocket-exit-btn" class="pocket-unlock-btn">
           <span id="pocket-unlock-text">Double-Tap or Hold to Exit</span>
           <div id="pocket-unlock-progress" class="pocket-unlock-progress"></div>
@@ -490,6 +518,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=15"></script>
+  <script src="/static/js/app.js?v=16"></script>
 </body>
 </html>
